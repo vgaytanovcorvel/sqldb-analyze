@@ -1,0 +1,451 @@
+{
+  "format": 1,
+  "restore": {
+    "C:\\Users\\a03.Vladimir_Gaytano\\source\\repos\\sqldb-analyze\\tests\\SqlDbAnalyze.Cli.Tests\\SqlDbAnalyze.Cli.Tests.csproj": {}
+  },
+  "projects": {
+    "C:\\Users\\a03.Vladimir_Gaytano\\source\\repos\\sqldb-analyze\\src\\SqlDbAnalyze.Abstractions\\SqlDbAnalyze.Abstractions.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\a03.Vladimir_Gaytano\\source\\repos\\sqldb-analyze\\src\\SqlDbAnalyze.Abstractions\\SqlDbAnalyze.Abstractions.csproj",
+        "projectName": "SqlDbAnalyze.Abstractions",
+        "projectPath": "C:\\Users\\a03.Vladimir_Gaytano\\source\\repos\\sqldb-analyze\\src\\SqlDbAnalyze.Abstractions\\SqlDbAnalyze.Abstractions.csproj",
+        "packagesPath": "C:\\Users\\a03.Vladimir_Gaytano\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\a03.Vladimir_Gaytano\\source\\repos\\sqldb-analyze\\src\\SqlDbAnalyze.Abstractions\\obj\\",
+        "projectStyle": "PackageReference",
+        "centralPackageVersionsManagementEnabled": true,
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\a03.Vladimir_Gaytano\\source\\repos\\sqldb-analyze\\NuGet.Config",
+          "C:\\Users\\a03.Vladimir_Gaytano\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "10.0.100"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "centralPackageVersions": {
+            "Azure.Identity": "1.13.2",
+            "Azure.Monitor.Query": "1.5.0",
+            "Azure.ResourceManager": "1.13.0",
+            "Azure.ResourceManager.Sql": "1.3.0",
+            "coverlet.collector": "6.0.2",
+            "FluentAssertions": "6.12.0",
+            "Microsoft.Extensions.Configuration.Abstractions": "9.0.0",
+            "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.0",
+            "Microsoft.Extensions.Hosting": "9.0.0",
+            "Microsoft.Extensions.Logging.Abstractions": "9.0.0",
+            "Microsoft.Extensions.Options": "9.0.0",
+            "Microsoft.NET.Test.Sdk": "17.11.0",
+            "NSubstitute": "5.3.0",
+            "System.CommandLine": "2.0.0-beta4.22272.1",
+            "System.CommandLine.Hosting": "0.4.0-alpha.22272.1",
+            "xunit": "2.9.0",
+            "xunit.runner.visualstudio": "2.8.2"
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.103/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\Users\\a03.Vladimir_Gaytano\\source\\repos\\sqldb-analyze\\src\\SqlDbAnalyze.Cli\\SqlDbAnalyze.Cli.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\a03.Vladimir_Gaytano\\source\\repos\\sqldb-analyze\\src\\SqlDbAnalyze.Cli\\SqlDbAnalyze.Cli.csproj",
+        "projectName": "SqlDbAnalyze.Cli",
+        "projectPath": "C:\\Users\\a03.Vladimir_Gaytano\\source\\repos\\sqldb-analyze\\src\\SqlDbAnalyze.Cli\\SqlDbAnalyze.Cli.csproj",
+        "packagesPath": "C:\\Users\\a03.Vladimir_Gaytano\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\a03.Vladimir_Gaytano\\source\\repos\\sqldb-analyze\\src\\SqlDbAnalyze.Cli\\obj\\",
+        "projectStyle": "PackageReference",
+        "centralPackageVersionsManagementEnabled": true,
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\a03.Vladimir_Gaytano\\source\\repos\\sqldb-analyze\\NuGet.Config",
+          "C:\\Users\\a03.Vladimir_Gaytano\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {
+              "C:\\Users\\a03.Vladimir_Gaytano\\source\\repos\\sqldb-analyze\\src\\SqlDbAnalyze.Abstractions\\SqlDbAnalyze.Abstractions.csproj": {
+                "projectPath": "C:\\Users\\a03.Vladimir_Gaytano\\source\\repos\\sqldb-analyze\\src\\SqlDbAnalyze.Abstractions\\SqlDbAnalyze.Abstractions.csproj"
+              },
+              "C:\\Users\\a03.Vladimir_Gaytano\\source\\repos\\sqldb-analyze\\src\\SqlDbAnalyze.Implementation\\SqlDbAnalyze.Implementation.csproj": {
+                "projectPath": "C:\\Users\\a03.Vladimir_Gaytano\\source\\repos\\sqldb-analyze\\src\\SqlDbAnalyze.Implementation\\SqlDbAnalyze.Implementation.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "10.0.100"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "dependencies": {
+            "Microsoft.Extensions.Hosting": {
+              "target": "Package",
+              "version": "[9.0.0, )",
+              "versionCentrallyManaged": true
+            },
+            "System.CommandLine": {
+              "target": "Package",
+              "version": "[2.0.0-beta4.22272.1, )",
+              "versionCentrallyManaged": true
+            },
+            "System.CommandLine.Hosting": {
+              "target": "Package",
+              "version": "[0.4.0-alpha.22272.1, )",
+              "versionCentrallyManaged": true
+            }
+          },
+          "centralPackageVersions": {
+            "Azure.Identity": "1.13.2",
+            "Azure.Monitor.Query": "1.5.0",
+            "Azure.ResourceManager": "1.13.0",
+            "Azure.ResourceManager.Sql": "1.3.0",
+            "coverlet.collector": "6.0.2",
+            "FluentAssertions": "6.12.0",
+            "Microsoft.Extensions.Configuration.Abstractions": "9.0.0",
+            "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.0",
+            "Microsoft.Extensions.Hosting": "9.0.0",
+            "Microsoft.Extensions.Logging.Abstractions": "9.0.0",
+            "Microsoft.Extensions.Options": "9.0.0",
+            "Microsoft.NET.Test.Sdk": "17.11.0",
+            "NSubstitute": "5.3.0",
+            "System.CommandLine": "2.0.0-beta4.22272.1",
+            "System.CommandLine.Hosting": "0.4.0-alpha.22272.1",
+            "xunit": "2.9.0",
+            "xunit.runner.visualstudio": "2.8.2"
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.103/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\Users\\a03.Vladimir_Gaytano\\source\\repos\\sqldb-analyze\\src\\SqlDbAnalyze.Implementation\\SqlDbAnalyze.Implementation.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\a03.Vladimir_Gaytano\\source\\repos\\sqldb-analyze\\src\\SqlDbAnalyze.Implementation\\SqlDbAnalyze.Implementation.csproj",
+        "projectName": "SqlDbAnalyze.Implementation",
+        "projectPath": "C:\\Users\\a03.Vladimir_Gaytano\\source\\repos\\sqldb-analyze\\src\\SqlDbAnalyze.Implementation\\SqlDbAnalyze.Implementation.csproj",
+        "packagesPath": "C:\\Users\\a03.Vladimir_Gaytano\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\a03.Vladimir_Gaytano\\source\\repos\\sqldb-analyze\\src\\SqlDbAnalyze.Implementation\\obj\\",
+        "projectStyle": "PackageReference",
+        "centralPackageVersionsManagementEnabled": true,
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\a03.Vladimir_Gaytano\\source\\repos\\sqldb-analyze\\NuGet.Config",
+          "C:\\Users\\a03.Vladimir_Gaytano\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {
+              "C:\\Users\\a03.Vladimir_Gaytano\\source\\repos\\sqldb-analyze\\src\\SqlDbAnalyze.Abstractions\\SqlDbAnalyze.Abstractions.csproj": {
+                "projectPath": "C:\\Users\\a03.Vladimir_Gaytano\\source\\repos\\sqldb-analyze\\src\\SqlDbAnalyze.Abstractions\\SqlDbAnalyze.Abstractions.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "10.0.100"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "dependencies": {
+            "Azure.Identity": {
+              "target": "Package",
+              "version": "[1.13.2, )",
+              "versionCentrallyManaged": true
+            },
+            "Azure.Monitor.Query": {
+              "target": "Package",
+              "version": "[1.5.0, )",
+              "versionCentrallyManaged": true
+            },
+            "Azure.ResourceManager": {
+              "target": "Package",
+              "version": "[1.13.0, )",
+              "versionCentrallyManaged": true
+            },
+            "Azure.ResourceManager.Sql": {
+              "target": "Package",
+              "version": "[1.3.0, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.DependencyInjection.Abstractions": {
+              "target": "Package",
+              "version": "[9.0.0, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Logging.Abstractions": {
+              "target": "Package",
+              "version": "[9.0.0, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Options": {
+              "target": "Package",
+              "version": "[9.0.0, )",
+              "versionCentrallyManaged": true
+            }
+          },
+          "centralPackageVersions": {
+            "Azure.Identity": "1.13.2",
+            "Azure.Monitor.Query": "1.5.0",
+            "Azure.ResourceManager": "1.13.0",
+            "Azure.ResourceManager.Sql": "1.3.0",
+            "coverlet.collector": "6.0.2",
+            "FluentAssertions": "6.12.0",
+            "Microsoft.Extensions.Configuration.Abstractions": "9.0.0",
+            "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.0",
+            "Microsoft.Extensions.Hosting": "9.0.0",
+            "Microsoft.Extensions.Logging.Abstractions": "9.0.0",
+            "Microsoft.Extensions.Options": "9.0.0",
+            "Microsoft.NET.Test.Sdk": "17.11.0",
+            "NSubstitute": "5.3.0",
+            "System.CommandLine": "2.0.0-beta4.22272.1",
+            "System.CommandLine.Hosting": "0.4.0-alpha.22272.1",
+            "xunit": "2.9.0",
+            "xunit.runner.visualstudio": "2.8.2"
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.103/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\Users\\a03.Vladimir_Gaytano\\source\\repos\\sqldb-analyze\\tests\\SqlDbAnalyze.Cli.Tests\\SqlDbAnalyze.Cli.Tests.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\a03.Vladimir_Gaytano\\source\\repos\\sqldb-analyze\\tests\\SqlDbAnalyze.Cli.Tests\\SqlDbAnalyze.Cli.Tests.csproj",
+        "projectName": "SqlDbAnalyze.Cli.Tests",
+        "projectPath": "C:\\Users\\a03.Vladimir_Gaytano\\source\\repos\\sqldb-analyze\\tests\\SqlDbAnalyze.Cli.Tests\\SqlDbAnalyze.Cli.Tests.csproj",
+        "packagesPath": "C:\\Users\\a03.Vladimir_Gaytano\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\a03.Vladimir_Gaytano\\source\\repos\\sqldb-analyze\\tests\\SqlDbAnalyze.Cli.Tests\\obj\\",
+        "projectStyle": "PackageReference",
+        "centralPackageVersionsManagementEnabled": true,
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\a03.Vladimir_Gaytano\\source\\repos\\sqldb-analyze\\NuGet.Config",
+          "C:\\Users\\a03.Vladimir_Gaytano\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {
+              "C:\\Users\\a03.Vladimir_Gaytano\\source\\repos\\sqldb-analyze\\src\\SqlDbAnalyze.Cli\\SqlDbAnalyze.Cli.csproj": {
+                "projectPath": "C:\\Users\\a03.Vladimir_Gaytano\\source\\repos\\sqldb-analyze\\src\\SqlDbAnalyze.Cli\\SqlDbAnalyze.Cli.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "10.0.100"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "dependencies": {
+            "FluentAssertions": {
+              "target": "Package",
+              "version": "[6.12.0, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.NET.Test.Sdk": {
+              "target": "Package",
+              "version": "[17.11.0, )",
+              "versionCentrallyManaged": true
+            },
+            "NSubstitute": {
+              "target": "Package",
+              "version": "[5.3.0, )",
+              "versionCentrallyManaged": true
+            },
+            "coverlet.collector": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[6.0.2, )",
+              "versionCentrallyManaged": true
+            },
+            "xunit": {
+              "target": "Package",
+              "version": "[2.9.0, )",
+              "versionCentrallyManaged": true
+            },
+            "xunit.runner.visualstudio": {
+              "target": "Package",
+              "version": "[2.8.2, )",
+              "versionCentrallyManaged": true
+            }
+          },
+          "centralPackageVersions": {
+            "Azure.Identity": "1.13.2",
+            "Azure.Monitor.Query": "1.5.0",
+            "Azure.ResourceManager": "1.13.0",
+            "Azure.ResourceManager.Sql": "1.3.0",
+            "coverlet.collector": "6.0.2",
+            "FluentAssertions": "6.12.0",
+            "Microsoft.Extensions.Configuration.Abstractions": "9.0.0",
+            "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.0",
+            "Microsoft.Extensions.Hosting": "9.0.0",
+            "Microsoft.Extensions.Logging.Abstractions": "9.0.0",
+            "Microsoft.Extensions.Options": "9.0.0",
+            "Microsoft.NET.Test.Sdk": "17.11.0",
+            "NSubstitute": "5.3.0",
+            "System.CommandLine": "2.0.0-beta4.22272.1",
+            "System.CommandLine.Hosting": "0.4.0-alpha.22272.1",
+            "xunit": "2.9.0",
+            "xunit.runner.visualstudio": "2.8.2"
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.103/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}
