@@ -12,6 +12,7 @@ public class ServerAnalysisService(
         string resourceGroupName,
         string serverName,
         TimeSpan timeRange,
+        AnalysisTimeWindow? timeWindow,
         CancellationToken cancellationToken)
     {
         var databaseNames = await azureMetricsService.GetDatabaseNamesAsync(
@@ -23,6 +24,11 @@ public class ServerAnalysisService(
             var metrics = await azureMetricsService.GetDtuMetricsAsync(
                 subscriptionId, resourceGroupName, serverName, dbName,
                 timeRange, cancellationToken);
+
+            if (timeWindow is not null)
+            {
+                metrics = dtuAnalysisService.FilterByTimeWindow(metrics, timeWindow);
+            }
 
             var dtuLimit = await azureMetricsService.GetDatabaseDtuLimitAsync(
                 subscriptionId, resourceGroupName, serverName, dbName,

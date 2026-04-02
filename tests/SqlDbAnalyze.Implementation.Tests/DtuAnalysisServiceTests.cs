@@ -9,6 +9,135 @@ public class DtuAnalysisServiceTests
 {
     private readonly DtuAnalysisService sut = new();
 
+    // --- FilterByTimeWindow ---
+
+    [Fact]
+    public void FilterByTimeWindow_ShouldReturnEmpty_WhenMetricsListIsEmpty()
+    {
+        // Arrange
+        IReadOnlyList<DtuMetric> metrics = [];
+        var window = new AnalysisTimeWindow(
+            new TimeOnly(9, 0), new TimeOnly(17, 0), "Eastern Standard Time");
+
+        // Act
+        var result = sut.FilterByTimeWindow(metrics, window);
+
+        // Assert
+        result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void FilterByTimeWindow_ShouldKeepMetrics_WhenTimestampIsWithinWindow()
+    {
+        // Arrange — 14:00 UTC = 10:00 ET (within 09:00-17:00 ET)
+        var timestamp = new DateTimeOffset(2026, 3, 15, 14, 0, 0, TimeSpan.Zero);
+        IReadOnlyList<DtuMetric> metrics = [new DtuMetric("db1", timestamp, 50.0)];
+        var window = new AnalysisTimeWindow(
+            new TimeOnly(9, 0), new TimeOnly(17, 0), "Eastern Standard Time");
+
+        // Act
+        var result = sut.FilterByTimeWindow(metrics, window);
+
+        // Assert
+        result.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public void FilterByTimeWindow_ShouldExcludeMetrics_WhenTimestampIsOutsideWindow()
+    {
+        // Arrange — 06:00 UTC = 02:00 ET (outside 09:00-17:00 ET)
+        var timestamp = new DateTimeOffset(2026, 3, 15, 6, 0, 0, TimeSpan.Zero);
+        IReadOnlyList<DtuMetric> metrics = [new DtuMetric("db1", timestamp, 50.0)];
+        var window = new AnalysisTimeWindow(
+            new TimeOnly(9, 0), new TimeOnly(17, 0), "Eastern Standard Time");
+
+        // Act
+        var result = sut.FilterByTimeWindow(metrics, window);
+
+        // Assert
+        result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void FilterByTimeWindow_ShouldIncludeStartBoundary_WhenTimestampIsExactlyAtStart()
+    {
+        // Arrange — 13:00 UTC = 09:00 ET (exactly at start, should be included)
+        var timestamp = new DateTimeOffset(2026, 3, 15, 13, 0, 0, TimeSpan.Zero);
+        IReadOnlyList<DtuMetric> metrics = [new DtuMetric("db1", timestamp, 50.0)];
+        var window = new AnalysisTimeWindow(
+            new TimeOnly(9, 0), new TimeOnly(17, 0), "Eastern Standard Time");
+
+        // Act
+        var result = sut.FilterByTimeWindow(metrics, window);
+
+        // Assert
+        result.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public void FilterByTimeWindow_ShouldExcludeEndBoundary_WhenTimestampIsExactlyAtEnd()
+    {
+        // Arrange — 21:00 UTC = 17:00 ET (exactly at end, should be excluded)
+        var timestamp = new DateTimeOffset(2026, 3, 15, 21, 0, 0, TimeSpan.Zero);
+        IReadOnlyList<DtuMetric> metrics = [new DtuMetric("db1", timestamp, 50.0)];
+        var window = new AnalysisTimeWindow(
+            new TimeOnly(9, 0), new TimeOnly(17, 0), "Eastern Standard Time");
+
+        // Act
+        var result = sut.FilterByTimeWindow(metrics, window);
+
+        // Assert
+        result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void FilterByTimeWindow_ShouldFilterMixedMetrics_WhenSomeAreInsideAndSomeOutside()
+    {
+        // Arrange
+        var insideTime = new DateTimeOffset(2026, 3, 15, 15, 0, 0, TimeSpan.Zero); // 11:00 ET
+        var outsideTime = new DateTimeOffset(2026, 3, 15, 5, 0, 0, TimeSpan.Zero); // 01:00 ET
+
+        IReadOnlyList<DtuMetric> metrics =
+        [
+            new DtuMetric("db1", insideTime, 60.0),
+            new DtuMetric("db1", outsideTime, 20.0),
+        ];
+        var window = new AnalysisTimeWindow(
+            new TimeOnly(9, 0), new TimeOnly(17, 0), "Eastern Standard Time");
+
+        // Act
+        var result = sut.FilterByTimeWindow(metrics, window);
+
+        // Assert
+        result.Should().HaveCount(1);
+        result[0].DtuPercentage.Should().Be(60.0);
+    }
+
+    [Fact]
+    public void FilterByTimeWindow_ShouldHandleOvernightWindow_WhenStartIsAfterEnd()
+    {
+        // Arrange — overnight window 22:00-06:00 ET
+        // 03:00 UTC = 23:00 ET (previous day, within window)
+        // 15:00 UTC = 11:00 ET (outside overnight window)
+        var insideTime = new DateTimeOffset(2026, 3, 15, 3, 0, 0, TimeSpan.Zero);
+        var outsideTime = new DateTimeOffset(2026, 3, 15, 15, 0, 0, TimeSpan.Zero);
+
+        IReadOnlyList<DtuMetric> metrics =
+        [
+            new DtuMetric("db1", insideTime, 40.0),
+            new DtuMetric("db1", outsideTime, 80.0),
+        ];
+        var window = new AnalysisTimeWindow(
+            new TimeOnly(22, 0), new TimeOnly(6, 0), "Eastern Standard Time");
+
+        // Act
+        var result = sut.FilterByTimeWindow(metrics, window);
+
+        // Assert
+        result.Should().HaveCount(1);
+        result[0].DtuPercentage.Should().Be(40.0);
+    }
+
     // --- AggregateByHour ---
 
     [Fact]

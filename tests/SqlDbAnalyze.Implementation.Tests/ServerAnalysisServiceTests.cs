@@ -75,7 +75,7 @@ public class ServerAnalysisServiceTests
 
         // Act
         var result = await sut.AnalyzeServerAsync(
-            SubscriptionId, ResourceGroupName, ServerName, timeRange, cancellationToken);
+            SubscriptionId, ResourceGroupName, ServerName, timeRange, null, cancellationToken);
 
         // Assert
         result.Should().Be(expectedRecommendation);
@@ -110,7 +110,7 @@ public class ServerAnalysisServiceTests
 
         // Act
         var result = await sut.AnalyzeServerAsync(
-            SubscriptionId, ResourceGroupName, ServerName, timeRange, cancellationToken);
+            SubscriptionId, ResourceGroupName, ServerName, timeRange, null, cancellationToken);
 
         // Assert
         result.Should().Be(expectedRecommendation);
@@ -153,7 +153,7 @@ public class ServerAnalysisServiceTests
 
         // Act
         var result = await sut.AnalyzeServerAsync(
-            SubscriptionId, ResourceGroupName, ServerName, timeRange, token);
+            SubscriptionId, ResourceGroupName, ServerName, timeRange, null, token);
 
         // Assert
         result.Should().NotBeNull();
@@ -194,11 +194,60 @@ public class ServerAnalysisServiceTests
 
         // Act
         var result = await sut.AnalyzeServerAsync(
-            SubscriptionId, ResourceGroupName, ServerName, timeRange, cancellationToken);
+            SubscriptionId, ResourceGroupName, ServerName, timeRange, null, cancellationToken);
 
         // Assert
         result.Should().Be(recommendation);
         result.DatabaseSummaries.Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task AnalyzeServerAsync_ShouldFilterMetrics_WhenTimeWindowProvided()
+    {
+        // Arrange
+        var cancellationToken = CancellationToken.None;
+        var dbNames = new List<string> { "db1" };
+        var baseTime = new DateTimeOffset(2026, 3, 15, 10, 0, 0, TimeSpan.Zero);
+        var allMetrics = new List<DtuMetric>
+        {
+            new("db1", baseTime, 50.0),
+            new("db1", baseTime.AddHours(12), 70.0),
+        };
+        var filteredMetrics = new List<DtuMetric>
+        {
+            new("db1", baseTime, 50.0),
+        };
+        var timeWindow = new AnalysisTimeWindow(
+            new TimeOnly(9, 0), new TimeOnly(17, 0), "Eastern Standard Time");
+
+        var summary = new DatabaseDtuSummary("db1", 50.0, 50.0, 100);
+        var recommendation = new ElasticPoolRecommendation("Basic", 50, 50.0, [summary]);
+
+        azureMetricsServiceMock.GetDatabaseNamesAsync(
+                SubscriptionId, ResourceGroupName, ServerName, cancellationToken)
+            .Returns(dbNames);
+        azureMetricsServiceMock.GetDtuMetricsAsync(
+                SubscriptionId, ResourceGroupName, ServerName, "db1", timeRange, cancellationToken)
+            .Returns(allMetrics);
+        azureMetricsServiceMock.GetDatabaseDtuLimitAsync(
+                SubscriptionId, ResourceGroupName, ServerName, "db1", cancellationToken)
+            .Returns(100);
+
+        dtuAnalysisServiceMock.FilterByTimeWindow(allMetrics, timeWindow)
+            .Returns(filteredMetrics);
+        dtuAnalysisServiceMock.Summarize("db1", filteredMetrics, 100)
+            .Returns(summary);
+        dtuAnalysisServiceMock.Recommend(
+                Arg.Is<IReadOnlyList<DatabaseDtuSummary>>(s => s.Count == 1 && s[0] == summary))
+            .Returns(recommendation);
+
+        // Act
+        var result = await sut.AnalyzeServerAsync(
+            SubscriptionId, ResourceGroupName, ServerName, timeRange, timeWindow, cancellationToken);
+
+        // Assert
+        result.Should().Be(recommendation);
+        dtuAnalysisServiceMock.Received(1).FilterByTimeWindow(allMetrics, timeWindow);
     }
 
     [Fact]
@@ -219,7 +268,7 @@ public class ServerAnalysisServiceTests
 
         // Act
         var act = () => sut.AnalyzeServerAsync(
-            SubscriptionId, ResourceGroupName, ServerName, timeRange, cancellationToken);
+            SubscriptionId, ResourceGroupName, ServerName, timeRange, null, cancellationToken);
 
         // Assert
         var exception = await act.Should().ThrowAsync<InvalidOperationException>();
@@ -250,7 +299,7 @@ public class ServerAnalysisServiceTests
 
         // Act
         var act = () => sut.AnalyzeServerAsync(
-            SubscriptionId, ResourceGroupName, ServerName, timeRange, cancellationToken);
+            SubscriptionId, ResourceGroupName, ServerName, timeRange, null, cancellationToken);
 
         // Assert
         var exception = await act.Should().ThrowAsync<InvalidOperationException>();

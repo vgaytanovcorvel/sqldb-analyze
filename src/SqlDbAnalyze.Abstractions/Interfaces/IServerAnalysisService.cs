@@ -9,5 +9,6 @@ public interface IServerAnalysisService
         string resourceGroupName,
         string serverName,
         TimeSpan timeRange,
+        AnalysisTimeWindow? timeWindow,
         CancellationToken cancellationToken);
 }

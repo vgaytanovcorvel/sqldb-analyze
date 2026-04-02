@@ -270,6 +270,117 @@ public class AnalyzeCommandTests
     }
 
     [Fact]
+    public void WindowStartOption_ShouldNotBeRequired_WhenCommandIsConstructed()
+    {
+        // Arrange
+        // (sut created via field initializer)
+
+        // Act
+        var option = sut.Options
+            .FirstOrDefault(o => o.Aliases.Contains("--window-start"));
+
+        // Assert
+        option.Should().NotBeNull();
+        option!.IsRequired.Should().BeFalse();
+    }
+
+    [Fact]
+    public void WindowEndOption_ShouldNotBeRequired_WhenCommandIsConstructed()
+    {
+        // Arrange
+        // (sut created via field initializer)
+
+        // Act
+        var option = sut.Options
+            .FirstOrDefault(o => o.Aliases.Contains("--window-end"));
+
+        // Assert
+        option.Should().NotBeNull();
+        option!.IsRequired.Should().BeFalse();
+    }
+
+    [Fact]
+    public void WindowTimezoneOption_ShouldDefaultToEastern_WhenNotProvided()
+    {
+        // Arrange
+        var parser = new Parser(sut);
+
+        // Act
+        var parseResult = parser.Parse("my-server --subscription sub-id --resource-group rg-name");
+        var tzOption = sut.Options.First(o => o.Aliases.Contains("--window-timezone")) as Option<string>;
+
+        // Assert
+        tzOption.Should().NotBeNull();
+        var value = parseResult.GetValueForOption(tzOption!);
+        value.Should().Be("Eastern Standard Time");
+    }
+
+    [Fact]
+    public void Parse_ShouldExtractWindowStart_WhenWindowStartProvided()
+    {
+        // Arrange
+        var parser = new Parser(sut);
+
+        // Act
+        var parseResult = parser.Parse(
+            "my-server --subscription sub-123 --resource-group my-rg --window-start 09:00");
+        var option = sut.Options.First(o => o.Aliases.Contains("--window-start")) as Option<string?>;
+
+        // Assert
+        option.Should().NotBeNull();
+        var value = parseResult.GetValueForOption(option!);
+        value.Should().Be("09:00");
+    }
+
+    [Fact]
+    public void Parse_ShouldExtractWindowEnd_WhenWindowEndProvided()
+    {
+        // Arrange
+        var parser = new Parser(sut);
+
+        // Act
+        var parseResult = parser.Parse(
+            "my-server --subscription sub-123 --resource-group my-rg --window-end 17:00");
+        var option = sut.Options.First(o => o.Aliases.Contains("--window-end")) as Option<string?>;
+
+        // Assert
+        option.Should().NotBeNull();
+        var value = parseResult.GetValueForOption(option!);
+        value.Should().Be("17:00");
+    }
+
+    [Fact]
+    public void Parse_ShouldExtractWindowTimezone_WhenCustomTimezoneProvided()
+    {
+        // Arrange
+        var parser = new Parser(sut);
+
+        // Act
+        var parseResult = parser.Parse(
+            "my-server --subscription sub-123 --resource-group my-rg --window-timezone \"Pacific Standard Time\"");
+        var option = sut.Options.First(o => o.Aliases.Contains("--window-timezone")) as Option<string>;
+
+        // Assert
+        option.Should().NotBeNull();
+        var value = parseResult.GetValueForOption(option!);
+        value.Should().Be("Pacific Standard Time");
+    }
+
+    [Fact]
+    public void Parse_ShouldProduceNoErrors_WhenAllWindowOptionsProvided()
+    {
+        // Arrange
+        var parser = new Parser(sut);
+
+        // Act
+        var parseResult = parser.Parse(
+            "my-server --subscription sub-123 --resource-group my-rg --window-start 09:00 --window-end 17:00 --window-timezone \"Eastern Standard Time\"");
+
+        // Assert
+        parseResult.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
     public void Parse_ShouldProduceErrors_WhenServerNameMissing()
     {
         // Arrange

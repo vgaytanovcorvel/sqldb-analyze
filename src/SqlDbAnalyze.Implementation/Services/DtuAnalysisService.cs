@@ -5,6 +5,31 @@ namespace SqlDbAnalyze.Implementation.Services;
 
 public class DtuAnalysisService : IDtuAnalysisService
 {
+    public virtual IReadOnlyList<DtuMetric> FilterByTimeWindow(
+        IReadOnlyList<DtuMetric> metrics,
+        AnalysisTimeWindow timeWindow)
+    {
+        var timeZone = TimeZoneInfo.FindSystemTimeZoneById(timeWindow.TimeZoneId);
+
+        return metrics
+            .Where(m => IsWithinWindow(m.Timestamp, timeZone, timeWindow.StartTime, timeWindow.EndTime))
+            .ToList();
+    }
+
+    private static bool IsWithinWindow(
+        DateTimeOffset timestamp,
+        TimeZoneInfo timeZone,
+        TimeOnly startTime,
+        TimeOnly endTime)
+    {
+        var localTime = TimeOnly.FromDateTime(
+            TimeZoneInfo.ConvertTime(timestamp, timeZone).DateTime);
+
+        return startTime <= endTime
+            ? localTime >= startTime && localTime < endTime
+            : localTime >= startTime || localTime < endTime;
+    }
+
     public virtual IReadOnlyList<HourlyDtuAggregate> AggregateByHour(IReadOnlyList<DtuMetric> metrics)
     {
         return metrics
