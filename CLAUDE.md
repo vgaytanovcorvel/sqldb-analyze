@@ -20,8 +20,8 @@ Rules are deployed in `/rules/` and referenced by each module's CLAUDE.md via `@
 | Module | Purpose |
 |---|---|
 | `SqlDbAnalyze.Abstractions` | Domain models, service interfaces, exceptions |
-| `SqlDbAnalyze.Implementation` | Azure metrics fetching, DTU analysis, elastic pool recommendation, DI registration |
-| `SqlDbAnalyze.Cli` | System.CommandLine CLI entry point with `analyze` command |
+| `SqlDbAnalyze.Implementation` | Azure metrics fetching, DTU analysis, elastic pool recommendation, correlation-aware pool optimization, CSV I/O, DI registration |
+| `SqlDbAnalyze.Cli` | System.CommandLine CLI entry point with `analyze`, `capture`, and `build-pools` commands |
 
 ### Tests (`tests/`)
 
@@ -51,9 +51,32 @@ Cli → Abstractions
 
 ## Usage
 
+### Analyze (simple DTU summary)
+
 ```bash
 dotnet run --project src/SqlDbAnalyze.Cli -- analyze <server-name> \
   --subscription <sub-id> \
   --resource-group <rg-name> \
   --hours 24
 ```
+
+### Capture (export time series CSV)
+
+```bash
+dotnet run --project src/SqlDbAnalyze.Cli -- capture <server-name> \
+  --subscription <sub-id> \
+  --resource-group <rg-name> \
+  --hours 168 \
+  --output metrics.csv
+```
+
+### Build Pools (correlation-aware pool optimization)
+
+```bash
+dotnet run --project src/SqlDbAnalyze.Cli -- build-pools metrics.csv \
+  --target-percentile 0.99 \
+  --safety-factor 1.10 \
+  --max-dbs-per-pool 50
+```
+
+See `docs/correlation-aware-pool-optimization.md` for the full algorithm description.

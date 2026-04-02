@@ -17,12 +17,16 @@ CLI entry point for the SQL DB DTU analysis tool.
 
 ## Module Purpose
 
-Console application entry point using System.CommandLine. Wires DI via IHost, defines the `analyze` command that accepts a SQL Server name and outputs DTU analysis with elastic pool recommendations.
+Console application entry point using System.CommandLine. Wires DI via IHost, defines `analyze`, `capture`, and `build-pools` commands.
 
 ## Key Contents
 
 - `Program.cs` — RootCommand, global options, CommandLineBuilder with UseHost() for DI
-- `Commands/AnalyzeCommand.cs` — `analyze` subcommand: accepts server name, subscription, resource group, hours; outputs DTU summary table and elastic pool recommendation
+- `RootCommandFactory.cs` — creates RootCommand and registers all subcommands
+- `Commands/AnalyzeCommand.cs` — `analyze` subcommand: DTU summary table and elastic pool recommendation
+- `Commands/CaptureCommand.cs` — `capture` subcommand: exports DTU time series to CSV
+- `Commands/BuildPoolsCommand.cs` — `build-pools` subcommand: correlation-aware pool optimization from CSV
+- `Commands/TimeWindowParser.cs` — shared utility for parsing time window options
 
 ## Dependency Constraints
 

@@ -15,6 +15,8 @@ public static class RootCommandFactory
 
         rootCommand.AddGlobalOption(verboseOption);
         rootCommand.AddCommand(new AnalyzeCommand());
+        rootCommand.AddCommand(new CaptureCommand());
+        rootCommand.AddCommand(new BuildPoolsCommand());
 
         return rootCommand;
     }

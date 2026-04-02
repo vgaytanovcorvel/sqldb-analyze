@@ -16,6 +16,13 @@ public static class SqlDbAnalyzeServiceCollectionExtensions
         services.AddScoped<IAzureMetricsService, AzureMetricsService>();
         services.AddScoped<IDtuAnalysisService, DtuAnalysisService>();
         services.AddScoped<IServerAnalysisService, ServerAnalysisService>();
+        services.AddScoped<IStatisticsService, StatisticsService>();
+        services.AddScoped<IPoolabilityService, PoolabilityService>();
+        services.AddScoped<IPlacementScorer, PlacementScorer>();
+        services.AddScoped<IPoolBuilder, PoolBuilder>();
+        services.AddScoped<ILocalSearchOptimizer, LocalSearchOptimizer>();
+        services.AddScoped<ITimeSeriesCsvService, TimeSeriesCsvService>();
+        services.AddScoped<ICaptureService, CaptureService>();
 
         return services;
     }

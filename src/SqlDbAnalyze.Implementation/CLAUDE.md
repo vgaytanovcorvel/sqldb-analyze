@@ -19,6 +19,13 @@ Implements Azure Monitor metrics fetching, DTU aggregation/summarization, and el
 - `Services/AzureMetricsService.cs` — fetches database lists, DTU metrics, and DTU limits from Azure via ARM and Monitor SDKs
 - `Services/DtuAnalysisService.cs` — aggregates DTU metrics by hour, summarizes per-database, and recommends elastic pool sizing
 - `Services/ServerAnalysisService.cs` — orchestrates full server analysis by combining metrics fetching and analysis
+- `Services/StatisticsService.cs` — pure math: mean, percentile, Pearson correlation, sum series, overload fraction
+- `Services/TimeSeriesCsvService.cs` — CSV read/write/merge for DTU time series
+- `Services/PoolabilityService.cs` — pairwise poolability metrics and database profile building
+- `Services/PlacementScorer.cs` — scores placing a database into a candidate pool
+- `Services/PoolBuilder.cs` — greedy pool construction sorted by p99 descending
+- `Services/LocalSearchOptimizer.cs` — iterative move-based pool improvement
+- `Services/CaptureService.cs` — orchestrates Azure metrics capture and timestamp alignment
 - `Extensions/SqlDbAnalyzeServiceCollectionExtensions.cs` — DI registration for all services and Azure SDK clients
 
 ## Dependency Constraints
