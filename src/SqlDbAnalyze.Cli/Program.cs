@@ -1,19 +1,11 @@
-using System.CommandLine;
 using System.CommandLine.Builder;
 using System.CommandLine.Hosting;
 using System.CommandLine.Parsing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using SqlDbAnalyze.Cli.Commands;
+using SqlDbAnalyze.Cli;
 
-var rootCommand = new RootCommand("sqldb-analyze - Analyze SQL Server DTU usage and recommend elastic pool sizing");
-
-var verboseOption = new Option<bool>(
-    ["--verbose", "-v"],
-    "Increase output detail");
-
-rootCommand.AddGlobalOption(verboseOption);
-rootCommand.AddCommand(new AnalyzeCommand());
+var rootCommand = RootCommandFactory.Create();
 
 return await new CommandLineBuilder(rootCommand)
     .UseDefaults()
