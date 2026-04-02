@@ -123,34 +123,56 @@ public class BuildPoolsCommand : Command
         console.WriteLine($"Recommended {result.Pools.Count} pool(s), total capacity: {result.TotalRequiredCapacity:F1} DTU");
         console.WriteLine("");
 
-        WritePoolTable(console, result);
+        WritePoolTree(console, result);
         WriteIsolated(console, result);
+        WriteLegend(console);
     }
 
-    private static void WritePoolTable(IConsole console, PoolOptimizationResult result)
+    private static void WritePoolTree(IConsole console, PoolOptimizationResult result)
     {
-        console.WriteLine(new string('-', 100));
-        console.WriteLine(
-            $"{"Pool",-6} {"DBs",4} {"Capacity",10} {"P95",10} {"P99",10} {"Peak",10} {"Divers.",9} {"Overload",10} {"Databases"}");
-        console.WriteLine(new string('-', 100));
-
         foreach (var pool in result.Pools)
         {
-            var dbList = string.Join(", ", pool.DatabaseNames);
             console.WriteLine(
-                $"{pool.PoolIndex,-6} {pool.DatabaseNames.Count,4} {pool.RecommendedCapacity,10:F1} " +
-                $"{pool.P95Load,10:F1} {pool.P99Load,10:F1} {pool.PeakLoad,10:F1} " +
-                $"{pool.DiversificationRatio,9:F2} {pool.OverloadFraction,9:F4}% {dbList}");
-        }
+                $"Pool {pool.PoolIndex} -- {pool.RecommendedCapacity:F1} DTU capacity, " +
+                $"{pool.DatabaseNames.Count} database(s)");
+            console.WriteLine(
+                $"|  P95: {pool.P95Load:F1}   P99: {pool.P99Load:F1}   " +
+                $"Peak: {pool.PeakLoad:F1}   " +
+                $"Divers: {pool.DiversificationRatio:F2}   " +
+                $"Overload: {pool.OverloadFraction:F4}%");
+            console.WriteLine("|");
 
-        console.WriteLine("");
+            WriteTreeItems(console, pool.DatabaseNames);
+            console.WriteLine("");
+        }
     }
 
     private static void WriteIsolated(IConsole console, PoolOptimizationResult result)
     {
         if (result.IsolatedDatabases.Count == 0) return;
 
-        console.WriteLine($"Isolated databases: {string.Join(", ", result.IsolatedDatabases)}");
+        console.WriteLine("Isolated databases:");
+        WriteTreeItems(console, result.IsolatedDatabases);
+        console.WriteLine("");
+    }
+
+    private static void WriteTreeItems(IConsole console, IReadOnlyList<string> items)
+    {
+        for (var i = 0; i < items.Count; i++)
+        {
+            var isLast = i == items.Count - 1;
+            console.WriteLine($"{(isLast ? "└── " : "├── ")}{items[i]}");
+        }
+    }
+
+    private static void WriteLegend(IConsole console)
+    {
+        console.WriteLine("Legend:");
+        console.WriteLine("  Capacity  Recommended pool size (target percentile x safety factor)");
+        console.WriteLine("  P95/P99   95th and 99th percentile of combined pool load (DTU)");
+        console.WriteLine("  Peak      Maximum observed combined load (DTU)");
+        console.WriteLine("  Divers    Diversification ratio: sum of individual P99 / pooled P99 (higher = more efficient pooling)");
+        console.WriteLine("  Overload  Fraction of time combined load exceeds pool capacity");
         console.WriteLine("");
     }
 }
