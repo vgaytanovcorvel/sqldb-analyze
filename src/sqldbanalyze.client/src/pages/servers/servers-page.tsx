@@ -40,6 +40,8 @@ export function ServersPage() {
     <main className={styles.page}>
       <nav className={styles.nav}>
         <Link to="/analysis" className={styles.navLink}>Analysis</Link>
+        <span className={styles.navSep}>/</span>
+        <Link to="/pool-builder" className={styles.navLink}>Pool Builder</Link>
       </nav>
 
       <div className={styles.header}>

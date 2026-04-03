@@ -29,4 +29,9 @@ public interface IMetricsCacheService
         int registeredServerId,
         PoolSimulationRequest request,
         CancellationToken cancellationToken);
+
+    Task<PoolOptimizationResult> BuildPoolsAsync(
+        int registeredServerId,
+        BuildPoolsRequest request,
+        CancellationToken cancellationToken);
 }

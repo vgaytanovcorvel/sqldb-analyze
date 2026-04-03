@@ -59,3 +59,28 @@ export interface PoolSimulationResult {
   readonly sumIndividualDtuLimits: number
   readonly estimatedSavingsPercent: number
 }
+
+export interface BuildPoolsRequest {
+  readonly databaseNames: readonly string[]
+  readonly dtuLimits: Readonly<Record<string, number>>
+  readonly targetPercentile?: number
+  readonly safetyFactor?: number
+  readonly maxDatabasesPerPool?: number
+}
+
+export interface PoolAssignment {
+  readonly poolIndex: number
+  readonly databaseNames: readonly string[]
+  readonly recommendedCapacity: number
+  readonly p95Load: number
+  readonly p99Load: number
+  readonly peakLoad: number
+  readonly diversificationRatio: number
+  readonly overloadFraction: number
+}
+
+export interface PoolOptimizationResult {
+  readonly pools: readonly PoolAssignment[]
+  readonly totalRequiredCapacity: number
+  readonly isolatedDatabases: readonly string[]
+}

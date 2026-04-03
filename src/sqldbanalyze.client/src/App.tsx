@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { ServersPage } from './pages/servers/servers-page'
 import { AnalysisPage } from './pages/analysis/analysis-page'
+import { PoolBuilderPage } from './pages/pool-builder/pool-builder-page'
 
 export function App() {
   return (
@@ -8,6 +9,7 @@ export function App() {
       <Routes>
         <Route path="/" element={<ServersPage />} />
         <Route path="/analysis" element={<AnalysisPage />} />
+        <Route path="/pool-builder" element={<PoolBuilderPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

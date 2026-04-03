@@ -71,4 +71,16 @@ public class AnalysisController(
             serverId, request, cancellationToken);
         return Ok(result);
     }
+
+    [HttpPost("{serverId}/build-pools")]
+    [ProducesResponseType(typeof(PoolOptimizationResult), StatusCodes.Status200OK)]
+    public async Task<ActionResult<PoolOptimizationResult>> BuildPools(
+        int serverId,
+        [FromBody] BuildPoolsRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await metricsCacheService.BuildPoolsAsync(
+            serverId, request, cancellationToken);
+        return Ok(result);
+    }
 }

@@ -1,9 +1,11 @@
 import type { ApiClient } from '../core/api-client'
 import type {
+  BuildPoolsRequest,
   DatabaseInfo,
   DatabaseMetricsInterval,
   DtuTimeSeries,
   PoolabilityMetrics,
+  PoolOptimizationResult,
   PoolSimulationRequest,
   PoolSimulationResult,
 } from '../domain/models'
@@ -33,5 +35,9 @@ export class AnalysisRepository {
 
   async analysisSimulatePool(serverId: number, request: PoolSimulationRequest): Promise<PoolSimulationResult> {
     return this.http.post<PoolSimulationResult>(`/analysis/${serverId}/simulate-pool`, request)
+  }
+
+  async analysisBuildPools(serverId: number, request: BuildPoolsRequest): Promise<PoolOptimizationResult> {
+    return this.http.post<PoolOptimizationResult>(`/analysis/${serverId}/build-pools`, request)
   }
 }

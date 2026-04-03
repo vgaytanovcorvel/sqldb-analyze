@@ -9,7 +9,9 @@ public class MetricsCacheService(
     IAzureMetricsService azureMetricsService,
     ICaptureService captureService,
     IPoolabilityService poolabilityService,
-    IStatisticsService statisticsService) : IMetricsCacheService
+    IStatisticsService statisticsService,
+    IPoolBuilder poolBuilder,
+    ILocalSearchOptimizer localSearchOptimizer) : IMetricsCacheService
 {
     public virtual async Task<IReadOnlyList<string>> GetDatabaseNamesAsync(
         int registeredServerId, CancellationToken cancellationToken)
@@ -132,6 +134,47 @@ public class MetricsCacheService(
             recommendedDtu,
             sumIndividualLimits,
             savingsPercent);
+    }
+
+    public virtual async Task<PoolOptimizationResult> BuildPoolsAsync(
+        int registeredServerId,
+        BuildPoolsRequest request,
+        CancellationToken cancellationToken)
+    {
+        var timeSeries = await metricsCacheRepository.MetricsCacheGetTimeSeriesAsync(
+            registeredServerId, cancellationToken);
+
+        var absoluteTimeSeries = ConvertToAbsoluteDtuTimeSeries(timeSeries, request.DatabaseNames, request.DtuLimits);
+        var profiles = poolabilityService.BuildProfiles(absoluteTimeSeries);
+
+        var options = new PoolOptimizerOptions(
+            TargetPercentile: request.TargetPercentile,
+            SafetyFactor: request.SafetyFactor,
+            MaxDatabasesPerPool: request.MaxDatabasesPerPool);
+
+        var initial = poolBuilder.BuildPools(profiles, options);
+        return localSearchOptimizer.Improve(initial, profiles, options);
+    }
+
+    private static DtuTimeSeries ConvertToAbsoluteDtuTimeSeries(
+        DtuTimeSeries timeSeries,
+        IReadOnlyList<string> databaseNames,
+        IReadOnlyDictionary<string, int> dtuLimits)
+    {
+        var absoluteValues = new Dictionary<string, IReadOnlyList<double>>();
+
+        foreach (var name in databaseNames)
+        {
+            if (!timeSeries.DatabaseValues.TryGetValue(name, out var percentValues)) continue;
+
+            var dtuLimit = dtuLimits.TryGetValue(name, out var limit) ? limit : 0;
+
+            absoluteValues[name] = dtuLimit > 0
+                ? percentValues.Select(pct => pct / 100.0 * dtuLimit).ToList()
+                : percentValues;
+        }
+
+        return new DtuTimeSeries(timeSeries.Timestamps, absoluteValues);
     }
 
     private IReadOnlyList<IReadOnlyList<double>> ConvertToAbsoluteDtu(
