@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SqlDbAnalyze.Web.Core\SqlDbAnalyze.Web.Core.csproj" />
+    <ProjectReference Include="..\SqlDbAnalyze.Implementation\SqlDbAnalyze.Implementation.csproj" />
+    <ProjectReference Include="..\SqlDbAnalyze.Repository\SqlDbAnalyze.Repository.csproj" />
+    <PackageReference Include="Swashbuckle.AspNetCore" />
+  </ItemGroup>
+</Project>

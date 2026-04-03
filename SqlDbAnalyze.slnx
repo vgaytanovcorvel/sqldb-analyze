@@ -3,10 +3,16 @@
     <Project Path="src/SqlDbAnalyze.Abstractions/SqlDbAnalyze.Abstractions.csproj" />
     <Project Path="src/SqlDbAnalyze.Cli/SqlDbAnalyze.Cli.csproj" />
     <Project Path="src/SqlDbAnalyze.Implementation/SqlDbAnalyze.Implementation.csproj" />
+    <Project Path="src/SqlDbAnalyze.Repository/SqlDbAnalyze.Repository.csproj" />
+    <Project Path="src/SqlDbAnalyze.Web.Core/SqlDbAnalyze.Web.Core.csproj" />
+    <Project Path="src/SqlDbAnalyze.Web.Api/SqlDbAnalyze.Web.Api.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/SqlDbAnalyze.Abstractions.Tests/SqlDbAnalyze.Abstractions.Tests.csproj" />
     <Project Path="tests/SqlDbAnalyze.Cli.Tests/SqlDbAnalyze.Cli.Tests.csproj" />
     <Project Path="tests/SqlDbAnalyze.Implementation.Tests/SqlDbAnalyze.Implementation.Tests.csproj" />
+    <Project Path="tests/SqlDbAnalyze.Repository.Tests/SqlDbAnalyze.Repository.Tests.csproj" />
+    <Project Path="tests/SqlDbAnalyze.Web.Core.Tests/SqlDbAnalyze.Web.Core.Tests.csproj" />
+    <Project Path="tests/SqlDbAnalyze.Web.Api.Tests/SqlDbAnalyze.Web.Api.Tests.csproj" />
   </Folder>
 </Solution>
