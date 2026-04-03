@@ -8,6 +8,8 @@ interface DtuChartProps {
   readonly dtuLimits: Readonly<Record<string, number>>
   readonly p95?: number
   readonly p99?: number
+  readonly onDatabaseClick?: (name: string) => void
+  readonly focusedDatabase?: string | null
 }
 
 const DB_COLORS = [
@@ -16,7 +18,7 @@ const DB_COLORS = [
   '#0d9488', '#b91c1c', '#4f46e5', '#ea580c', '#059669',
 ]
 
-export function DtuChart({ timeSeries, selectedDatabases, dtuLimits, p95, p99 }: DtuChartProps) {
+export function DtuChart({ timeSeries, selectedDatabases, dtuLimits, p95, p99, onDatabaseClick, focusedDatabase }: DtuChartProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   const selectedNames = Array.from(selectedDatabases).filter(
@@ -64,7 +66,11 @@ export function DtuChart({ timeSeries, selectedDatabases, dtuLimits, p95, p99 }:
           Combined
         </span>
         {selectedNames.map((name, i) => (
-          <span key={name} className={styles.legendItem}>
+          <span
+            key={name}
+            className={`${styles.legendItem} ${onDatabaseClick ? styles.legendClickable : ''} ${focusedDatabase === name ? styles.legendFocused : ''}`}
+            onClick={onDatabaseClick ? () => onDatabaseClick(name) : undefined}
+          >
             <span
               className={styles.legendSwatch}
               style={{ background: DB_COLORS[i % DB_COLORS.length], opacity: 0.5 }}

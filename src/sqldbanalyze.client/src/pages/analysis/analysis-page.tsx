@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import type { DatabaseInfo } from '../../domain/models'
+import type { DatabaseInfo, DtuTimeSeries } from '../../domain/models'
 import { useServers } from '../../state/servers/use-servers'
 import { useDatabases } from '../../state/analysis/use-databases'
 import { useCachedIntervals } from '../../state/analysis/use-cached-intervals'
@@ -11,19 +11,24 @@ import { useAnalysisUiStore } from '../../state/analysis/analysis-ui-store'
 import { CorrelationHeatmap } from '../../components/analysis/correlation-heatmap/correlation-heatmap'
 import { PoolSimulation } from '../../components/analysis/pool-simulation/pool-simulation'
 import { DtuChart } from '../../components/analysis/dtu-chart/dtu-chart'
+import { DatabaseDtuChart } from '../../components/analysis/database-dtu-chart/database-dtu-chart'
 import { useServices } from '../../core/providers'
 import { useQuery } from '@tanstack/react-query'
 import styles from './analysis-page.module.css'
+
+const DTU_TIERS = [5, 10, 20, 50, 100, 125, 200, 250, 400, 500, 800, 1000, 1600, 1750, 3000, 4000] as const
 
 export function AnalysisPage() {
   const { data: servers = [], isLoading: serversLoading } = useServers()
   const {
     selectedServerId,
     selectedDatabaseNames,
+    focusedDatabaseName,
     selectServer,
     toggleDatabase,
     selectAllDatabases,
     clearDatabaseSelection,
+    focusDatabase,
   } = useAnalysisUiStore()
   const { data: databases = [], isLoading: databasesLoading } = useDatabases(selectedServerId)
   const { data: intervals = [], isLoading: intervalsLoading } = useCachedIntervals(selectedServerId)
@@ -46,18 +51,19 @@ export function AnalysisPage() {
   const allDatabaseNames = intervals.map((i) => i.databaseName)
   const allSelected = selectionCount > 0 && selectionCount === allDatabaseNames.length
 
-  function handleServerChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    const value = e.target.value
-    selectServer(value ? Number(value) : null)
-    simulatePool.reset()
-  }
+  const dtuLimitsMap = useMemo(() => buildDtuLimitsMap(databases, selectedDatabaseNames), [databases, selectedDatabaseNames])
 
-  function handleRefresh() {
-    if (selectedServerId === null) return
-    refreshMetrics.mutate({ serverId: selectedServerId, hours })
-  }
+  const recommendations = useMemo(
+    () => (timeSeries ? computeRecommendations(timeSeries, databases) : new Map<string, number>()),
+    [timeSeries, databases],
+  )
 
-  function handleSimulate() {
+  const prevSelectionRef = useRef<string>('')
+  useEffect(() => {
+    const key = Array.from(selectedDatabaseNames).sort().join(',')
+    if (key === prevSelectionRef.current) return
+    prevSelectionRef.current = key
+
     if (selectedServerId === null || selectionCount < 2) return
 
     const dtuLimits: Record<string, number> = {}
@@ -71,6 +77,17 @@ export function AnalysisPage() {
       serverId: selectedServerId,
       request: { databaseNames: Array.from(selectedDatabaseNames), dtuLimits },
     })
+  }, [selectedDatabaseNames, selectedServerId, databases, selectionCount])
+
+  function handleServerChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    const value = e.target.value
+    selectServer(value ? Number(value) : null)
+    simulatePool.reset()
+  }
+
+  function handleRefresh() {
+    if (selectedServerId === null) return
+    refreshMetrics.mutate({ serverId: selectedServerId, hours })
   }
 
   function handleToggleAll() {
@@ -80,6 +97,12 @@ export function AnalysisPage() {
       selectAllDatabases(allDatabaseNames)
     }
   }
+
+  function handleDatabaseFocus(name: string) {
+    focusDatabase(focusedDatabaseName === name ? null : name)
+  }
+
+  const focusedDbInfo = focusedDatabaseName ? databases.find((d) => d.databaseName === focusedDatabaseName) : null
 
   return (
     <main className={styles.page}>
@@ -140,15 +163,11 @@ export function AnalysisPage() {
                   <button className={styles.selectButton} onClick={handleToggleAll}>
                     {allSelected ? 'Clear All' : 'Select All'}
                   </button>
-                  <button
-                    className={styles.simulateButton}
-                    onClick={handleSimulate}
-                    disabled={selectionCount < 2 || simulatePool.isPending}
-                  >
-                    {simulatePool.isPending
-                      ? 'Simulating...'
-                      : `Simulate Pool (${selectionCount} selected)`}
-                  </button>
+                  {selectionCount >= 2 && (
+                    <span className={styles.selectionBadge}>
+                      {selectionCount} selected
+                    </span>
+                  )}
                 </div>
               )}
             </div>
@@ -172,6 +191,7 @@ export function AnalysisPage() {
                     <th>Database</th>
                     <th>Size (MB)</th>
                     <th>DTU Limit</th>
+                    <th>Recommended</th>
                     <th>Elastic Pool</th>
                     <th>Earliest</th>
                     <th>Latest</th>
@@ -184,6 +204,9 @@ export function AnalysisPage() {
                       (d) => d.databaseName === interval.databaseName,
                     )
                     const isSelected = selectedDatabaseNames.has(interval.databaseName)
+                    const recommended = recommendations.get(interval.databaseName)
+                    const currentLimit = dbInfo?.dtuLimit ?? 0
+                    const isDifferent = recommended !== undefined && currentLimit > 0 && recommended !== currentLimit
                     return (
                       <tr
                         key={interval.databaseName}
@@ -198,12 +221,35 @@ export function AnalysisPage() {
                             onClick={(e) => e.stopPropagation()}
                           />
                         </td>
-                        <td>{interval.databaseName}</td>
+                        <td>
+                          <button
+                            className={`${styles.dbNameButton} ${focusedDatabaseName === interval.databaseName ? styles.dbNameFocused : ''}`}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleDatabaseFocus(interval.databaseName)
+                            }}
+                            title="Click to view DTU chart for this database"
+                          >
+                            {interval.databaseName}
+                          </button>
+                        </td>
                         <td className={styles.numericCell}>
                           {dbInfo ? formatSize(dbInfo.dataSizeMB) : '-'}
                         </td>
                         <td className={styles.numericCell}>
                           {dbInfo ? (dbInfo.dtuLimit > 0 ? dbInfo.dtuLimit : '-') : '-'}
+                        </td>
+                        <td className={`${styles.numericCell} ${isDifferent ? styles.recommendedDifferent : ''}`}>
+                          {recommended !== undefined && currentLimit > 0 ? (
+                            <>
+                              {recommended}
+                              {isDifferent && (
+                                <span className={recommended < currentLimit ? styles.recommendedDown : styles.recommendedUp}>
+                                  {recommended < currentLimit ? ' \u25BC' : ' \u25B2'}
+                                </span>
+                              )}
+                            </>
+                          ) : '-'}
                         </td>
                         <td>{dbInfo?.elasticPoolName ?? '-'}</td>
                         <td>{formatTimestamp(interval.earliestTimestamp)}</td>
@@ -223,20 +269,38 @@ export function AnalysisPage() {
 
           {simulatePool.data && (
             <section className={styles.section}>
-              <h2 className={styles.sectionTitle}>Pool Simulation Results</h2>
+              <h2 className={styles.sectionTitle}>
+                Pool Simulation Results
+                {simulatePool.isPending && <span className={styles.recalculating}> (recalculating...)</span>}
+              </h2>
               <PoolSimulation result={simulatePool.data} />
             </section>
           )}
 
-          {simulatePool.data && timeSeries && (
+          {focusedDatabaseName && timeSeries && focusedDbInfo && (
+            <section className={styles.section}>
+              <h2 className={styles.sectionTitle}>Database DTU Detail</h2>
+              <DatabaseDtuChart
+                timeSeries={timeSeries}
+                databaseName={focusedDatabaseName}
+                dtuLimit={focusedDbInfo.dtuLimit}
+                recommendedDtu={recommendations.get(focusedDatabaseName) ?? null}
+                onClose={() => focusDatabase(null)}
+              />
+            </section>
+          )}
+
+          {timeSeries && selectionCount > 0 && (
             <section className={styles.section}>
               <h2 className={styles.sectionTitle}>Combined DTU Usage</h2>
               <DtuChart
                 timeSeries={timeSeries}
                 selectedDatabases={selectedDatabaseNames}
-                dtuLimits={buildDtuLimitsMap(databases, selectedDatabaseNames)}
-                p95={simulatePool.data.p95Dtu}
-                p99={simulatePool.data.p99Dtu}
+                dtuLimits={dtuLimitsMap}
+                p95={simulatePool.data?.p95Dtu}
+                p99={simulatePool.data?.p99Dtu}
+                onDatabaseClick={handleDatabaseFocus}
+                focusedDatabase={focusedDatabaseName}
               />
             </section>
           )}
@@ -282,4 +346,35 @@ function buildDtuLimitsMap(
     }
   }
   return map
+}
+
+function computeRecommendations(
+  timeSeries: DtuTimeSeries,
+  databases: readonly DatabaseInfo[],
+): Map<string, number> {
+  const result = new Map<string, number>()
+
+  for (const db of databases) {
+    const values = timeSeries.databaseValues[db.databaseName]
+    if (!values || values.length === 0 || db.dtuLimit <= 0) continue
+
+    const absoluteValues = values.map((pct) => (pct * db.dtuLimit) / 100)
+    const sorted = [...absoluteValues].sort((a, b) => a - b)
+    const p95Index = Math.ceil(sorted.length * 0.95) - 1
+    const p95 = sorted[Math.max(0, p95Index)] ?? 0
+
+    const tier = findSmallestTier(p95)
+    if (tier !== null) {
+      result.set(db.databaseName, tier)
+    }
+  }
+
+  return result
+}
+
+function findSmallestTier(requiredDtu: number): number | null {
+  for (const tier of DTU_TIERS) {
+    if (tier >= requiredDtu) return tier
+  }
+  return DTU_TIERS[DTU_TIERS.length - 1] ?? null
 }

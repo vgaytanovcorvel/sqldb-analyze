@@ -191,6 +191,55 @@
   background: var(--blue-100);
 }
 
+.dbNameButton {
+  background: none;
+  border: none;
+  color: var(--color-brand);
+  cursor: pointer;
+  font-size: var(--text-sm);
+  padding: 0;
+  text-align: start;
+  text-decoration: none;
+}
+
+.dbNameButton:hover {
+  text-decoration: underline;
+}
+
+.dbNameFocused {
+  font-weight: 700;
+  color: var(--blue-700);
+}
+
+.recommendedDifferent {
+  font-weight: 600;
+  color: var(--color-brand);
+}
+
+.recommendedDown {
+  color: var(--green-700);
+  font-size: var(--text-xs);
+}
+
+.recommendedUp {
+  color: var(--red-700);
+  font-size: var(--text-xs);
+}
+
+.selectionBadge {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  padding: var(--space-1) var(--space-2);
+  background: var(--gray-100);
+  border-radius: var(--radius-sm);
+}
+
+.recalculating {
+  font-size: var(--text-sm);
+  font-weight: 400;
+  color: var(--color-text-secondary);
+}
+
 .empty {
   text-align: center;
   padding: var(--space-8);
