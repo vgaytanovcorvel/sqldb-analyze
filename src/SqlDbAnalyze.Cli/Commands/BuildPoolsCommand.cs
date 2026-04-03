@@ -83,8 +83,8 @@ public class BuildPoolsCommand : Command
             console.WriteLine($"Loaded {profiles.Count} databases with {timeSeries.Timestamps.Count} time points.");
             console.WriteLine("");
 
-            var initial = poolBuilder.BuildPools(profiles, options);
-            var optimized = localSearch.Improve(initial, profiles, options);
+            var initial = poolBuilder.BuildPools(profiles, options, ct);
+            var optimized = localSearch.Improve(initial, profiles, options, ct);
 
             WriteResults(console, optimized);
         });

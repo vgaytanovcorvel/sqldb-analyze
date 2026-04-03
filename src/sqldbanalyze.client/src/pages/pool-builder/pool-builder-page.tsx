@@ -37,7 +37,7 @@ export function PoolBuilderPage() {
     setPoolTier,
   } = usePoolBuilderUiStore()
 
-  const { data: databases = [] } = useDatabases(selectedServerId)
+  const { data: databases = [], isLoading: databasesLoading } = useDatabases(selectedServerId)
   const { data: intervals = [] } = useCachedIntervals(selectedServerId)
   const { data: timeSeries } = useTimeSeries(selectedServerId)
   const buildPools = useBuildPools()
@@ -64,7 +64,8 @@ export function PoolBuilderPage() {
     }
   }, [hasIntervals, allDatabaseNames.length])
 
-  const dtuLimitsMap = useMemo(() => buildDtuLimitsMap(databases), [databases])
+  const databaseInfoMap = useMemo(() => buildDatabaseInfoMap(databases), [databases])
+  const dtuLimitsMap = useMemo(() => buildDtuLimitsMap(databaseInfoMap), [databaseInfoMap])
 
   const result = buildPools.data
 
@@ -113,22 +114,26 @@ export function PoolBuilderPage() {
     setFocusedDbName(focusedDbName === name ? null : name)
   }
 
-  const focusedDbInfo = focusedDbName ? databases.find((d) => d.databaseName === focusedDbName) : null
+  const focusedDbInfo = focusedDbName ? databaseInfoMap.get(focusedDbName) ?? null : null
 
   function handleBuildPools() {
     if (selectedServerId === null || selectionCount < 2) return
 
     const dtuLimits: Record<string, number> = {}
+    const validDatabaseNames: string[] = []
     for (const db of databases) {
-      if (selectedDatabaseNames.has(db.databaseName)) {
+      if (selectedDatabaseNames.has(db.databaseName) && db.dtuLimit > 0) {
         dtuLimits[db.databaseName] = db.dtuLimit
+        validDatabaseNames.push(db.databaseName)
       }
     }
+
+    if (validDatabaseNames.length < 2) return
 
     buildPools.mutate({
       serverId: selectedServerId,
       request: {
-        databaseNames: Array.from(selectedDatabaseNames),
+        databaseNames: validDatabaseNames,
         dtuLimits,
         targetPercentile,
         safetyFactor,
@@ -226,7 +231,7 @@ export function PoolBuilderPage() {
                   </div>
                   <div className={styles.dbListContainer}>
                     {filteredIntervals.map((interval) => {
-                      const dbInfo = databases.find((d) => d.databaseName === interval.databaseName)
+                      const dbInfo = databaseInfoMap.get(interval.databaseName)
                       const isSelected = selectedDatabaseNames.has(interval.databaseName)
                       return (
                         <label
@@ -319,7 +324,7 @@ export function PoolBuilderPage() {
               <button
                 className={styles.buildButton}
                 onClick={handleBuildPools}
-                disabled={selectionCount < 2 || buildPools.isPending}
+                disabled={selectionCount < 2 || databasesLoading || buildPools.isPending}
               >
                 {buildPools.isPending ? 'Building...' : `Build Pools (${selectionCount} databases)`}
               </button>
@@ -441,10 +446,18 @@ export function PoolBuilderPage() {
 }
 
 
-function buildDtuLimitsMap(databases: readonly DatabaseInfo[]): Record<string, number> {
-  const map: Record<string, number> = {}
+function buildDatabaseInfoMap(databases: readonly DatabaseInfo[]): ReadonlyMap<string, DatabaseInfo> {
+  const map = new Map<string, DatabaseInfo>()
   for (const db of databases) {
-    map[db.databaseName] = db.dtuLimit
+    map.set(db.databaseName, db)
+  }
+  return map
+}
+
+function buildDtuLimitsMap(infoMap: ReadonlyMap<string, DatabaseInfo>): Record<string, number> {
+  const map: Record<string, number> = {}
+  for (const [name, db] of infoMap) {
+    map[name] = db.dtuLimit
   }
   return map
 }
@@ -487,13 +500,13 @@ function computeSummary(
   )
 
   const totalStandaloneCost = standaloneDbs.reduce(
-    (sum, name) => sum + getSingleDbMonthlyCost(dtuLimits[name] ?? 0, 'standard'),
+    (sum, name) => sum + getSingleDbMonthlyCost(dtuLimits[name] ?? 0, tier),
     0,
   )
 
   const pooledDbsIndividualCost = pools.reduce(
     (sum, pool) => sum + pool.databaseNames.reduce(
-      (s, name) => s + getSingleDbMonthlyCost(dtuLimits[name] ?? 0, 'standard'),
+      (s, name) => s + getSingleDbMonthlyCost(dtuLimits[name] ?? 0, tier),
       0,
     ),
     0,

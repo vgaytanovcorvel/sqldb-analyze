@@ -8,13 +8,15 @@ public class LocalSearchOptimizer(IStatisticsService statisticsService) : ILocal
     public virtual PoolOptimizationResult Improve(
         PoolOptimizationResult initial,
         IReadOnlyList<DatabaseProfile> profiles,
-        PoolOptimizerOptions options)
+        PoolOptimizerOptions options,
+        CancellationToken cancellationToken = default)
     {
         var current = initial;
 
         for (var pass = 0; pass < options.MaxSearchPasses; pass++)
         {
-            var improved = RunSinglePass(current, profiles, options);
+            cancellationToken.ThrowIfCancellationRequested();
+            var improved = RunSinglePass(current, profiles, options, cancellationToken);
             if (improved is null) break;
             current = improved;
         }
@@ -25,12 +27,14 @@ public class LocalSearchOptimizer(IStatisticsService statisticsService) : ILocal
     private PoolOptimizationResult? RunSinglePass(
         PoolOptimizationResult current,
         IReadOnlyList<DatabaseProfile> profiles,
-        PoolOptimizerOptions options)
+        PoolOptimizerOptions options,
+        CancellationToken cancellationToken)
     {
         var profileMap = profiles.ToDictionary(p => p.DatabaseName);
 
         foreach (var sourcePool in current.Pools)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var move = FindBestMove(sourcePool, current.Pools, profileMap, options);
             if (move is not null)
                 return ApplyMove(current, move.Value, profileMap, options);
@@ -86,15 +90,39 @@ public class LocalSearchOptimizer(IStatisticsService statisticsService) : ILocal
         Dictionary<string, DatabaseProfile> profileMap,
         PoolOptimizerOptions options)
     {
-        var sourceWithout = ComputePoolCapacity(
-            sourcePool.DatabaseNames.Where(n => n != dbName).ToList(), profileMap, options);
-        var targetWith = ComputePoolCapacity(
-            targetPool.DatabaseNames.Append(dbName).ToList(), profileMap, options);
+        var sourceNames = sourcePool.DatabaseNames.Where(n => n != dbName).ToList();
+        var targetNames = targetPool.DatabaseNames.Append(dbName).ToList();
+
+        if (!MeetsDiversification(targetNames, profileMap, options)) return 0;
+        if (sourceNames.Count > 1 && !MeetsDiversification(sourceNames, profileMap, options)) return 0;
+
+        var sourceWithout = ComputePoolCapacity(sourceNames, profileMap, options);
+        var targetWith = ComputePoolCapacity(targetNames, profileMap, options);
 
         var before = sourcePool.RecommendedCapacity + targetPool.RecommendedCapacity;
         var after = sourceWithout + targetWith;
 
         return before - after;
+    }
+
+    private bool MeetsDiversification(
+        List<string> dbNames,
+        Dictionary<string, DatabaseProfile> profileMap,
+        PoolOptimizerOptions options)
+    {
+        if (dbNames.Count < 2) return true;
+
+        var series = dbNames.Select(n => profileMap[n].DtuValues).ToList();
+        var combined = statisticsService.SumSeries(series);
+        var sorted = SortCombinedLoad(combined);
+        var pooledP99 = statisticsService.PercentilePreSorted(sorted, 0.99);
+
+        if (pooledP99 <= 1e-6) return true;
+
+        var sumP99 = dbNames.Sum(n => profileMap[n].P99);
+        var diversification = sumP99 / pooledP99;
+
+        return diversification >= options.MinDiversificationRatio;
     }
 
     private double ComputePoolCapacity(
@@ -158,21 +186,31 @@ public class LocalSearchOptimizer(IStatisticsService statisticsService) : ILocal
 
         var series = dbNames.Select(n => profileMap[n].DtuValues).ToList();
         var combined = statisticsService.SumSeries(series);
+        var sorted = SortCombinedLoad(combined);
 
-        var capacity = statisticsService.Percentile(combined, options.TargetPercentile) * options.SafetyFactor;
+        var capacity = statisticsService.PercentilePreSorted(sorted, options.TargetPercentile) * options.SafetyFactor;
         if (options.MaxPoolCapacity.HasValue)
             capacity = Math.Min(capacity, options.MaxPoolCapacity.Value);
 
         var sumP99 = dbNames.Sum(n => profileMap[n].P99);
-        var pooledP99 = statisticsService.Percentile(combined, 0.99);
+        var pooledP99 = statisticsService.PercentilePreSorted(sorted, 0.99);
 
         return new PoolAssignment(
             poolIndex, dbNames, capacity,
-            statisticsService.Percentile(combined, 0.95),
+            statisticsService.PercentilePreSorted(sorted, 0.95),
             pooledP99,
             combined.Max(),
             pooledP99 > 1e-6 ? sumP99 / pooledP99 : 1,
             statisticsService.OverloadFraction(combined, capacity));
+    }
+
+    private static double[] SortCombinedLoad(IReadOnlyList<double> load)
+    {
+        var sorted = new double[load.Count];
+        for (var i = 0; i < load.Count; i++)
+            sorted[i] = load[i];
+        Array.Sort(sorted);
+        return sorted;
     }
 
     private readonly record struct MoveCandidate(

@@ -19,18 +19,27 @@ public class StatisticsService : IStatisticsService
     {
         if (values.Count == 0) return 0;
 
-        var sorted = values.OrderBy(x => x).ToArray();
+        var sorted = new double[values.Count];
+        for (var i = 0; i < values.Count; i++)
+            sorted[i] = values[i];
+        Array.Sort(sorted);
 
-        if (p <= 0) return sorted[0];
-        if (p >= 1) return sorted[^1];
+        return PercentilePreSorted(sorted, p);
+    }
 
-        var index = (sorted.Length - 1) * p;
+    public virtual double PercentilePreSorted(double[] sortedValues, double p)
+    {
+        if (sortedValues.Length == 0) return 0;
+        if (p <= 0) return sortedValues[0];
+        if (p >= 1) return sortedValues[^1];
+
+        var index = (sortedValues.Length - 1) * p;
         var lo = (int)Math.Floor(index);
         var hi = (int)Math.Ceiling(index);
 
         return lo == hi
-            ? sorted[lo]
-            : sorted[lo] + (sorted[hi] - sorted[lo]) * (index - lo);
+            ? sortedValues[lo]
+            : sortedValues[lo] + (sortedValues[hi] - sortedValues[lo]) * (index - lo);
     }
 
     public virtual double PearsonCorrelation(IReadOnlyList<double> x, IReadOnlyList<double> y)

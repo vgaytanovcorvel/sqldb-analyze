@@ -9,7 +9,8 @@ public class PoolBuilder(
 {
     public virtual PoolOptimizationResult BuildPools(
         IReadOnlyList<DatabaseProfile> profiles,
-        PoolOptimizerOptions options)
+        PoolOptimizerOptions options,
+        CancellationToken cancellationToken = default)
     {
         var isolated = ExtractIsolated(profiles, options);
         var remaining = profiles
@@ -19,7 +20,10 @@ public class PoolBuilder(
 
         var pools = new List<MutablePool>();
         foreach (var profile in remaining)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
             PlaceDatabase(profile, pools, options);
+        }
 
         var candidatePools = pools.Select((p, i) => ToAssignment(p, i, options)).ToList();
         var demoted = DemoteLowDiversification(candidatePools, isolated, options);
@@ -90,20 +94,22 @@ public class PoolBuilder(
 
     private PoolAssignment ToAssignment(MutablePool pool, int index, PoolOptimizerOptions options)
     {
-        var capacity = statisticsService.Percentile(pool.CombinedLoad, options.TargetPercentile)
+        var sorted = SortCombinedLoad(pool.CombinedLoad);
+
+        var capacity = statisticsService.PercentilePreSorted(sorted, options.TargetPercentile)
                        * options.SafetyFactor;
 
         if (options.MaxPoolCapacity.HasValue)
             capacity = Math.Min(capacity, options.MaxPoolCapacity.Value);
 
         var sumIndividualP99 = pool.Profiles.Sum(p => p.P99);
-        var pooledP99 = statisticsService.Percentile(pool.CombinedLoad, 0.99);
+        var pooledP99 = statisticsService.PercentilePreSorted(sorted, 0.99);
 
         return new PoolAssignment(
             index,
             pool.DatabaseNames.ToList(),
             capacity,
-            statisticsService.Percentile(pool.CombinedLoad, 0.95),
+            statisticsService.PercentilePreSorted(sorted, 0.95),
             pooledP99,
             pool.CombinedLoad.Count > 0 ? pool.CombinedLoad.Max() : 0,
             pooledP99 > 1e-6 ? sumIndividualP99 / pooledP99 : 1,
@@ -117,12 +123,13 @@ public class PoolBuilder(
         PoolOptimizerOptions options)
     {
         var profile = profiles.First(p => p.DatabaseName == dbName);
-        var capacity = statisticsService.Percentile(profile.DtuValues, options.TargetPercentile)
+        var sorted = SortCombinedLoad(profile.DtuValues);
+        var capacity = statisticsService.PercentilePreSorted(sorted, options.TargetPercentile)
                        * options.SafetyFactor;
 
         return new PoolAssignment(
             index, [dbName], capacity,
-            statisticsService.Percentile(profile.DtuValues, 0.95),
+            statisticsService.PercentilePreSorted(sorted, 0.95),
             profile.P99,
             profile.Peak,
             1.0,
@@ -146,6 +153,15 @@ public class PoolBuilder(
         }
 
         return (kept, isolated);
+    }
+
+    private static double[] SortCombinedLoad(IReadOnlyList<double> load)
+    {
+        var sorted = new double[load.Count];
+        for (var i = 0; i < load.Count; i++)
+            sorted[i] = load[i];
+        Array.Sort(sorted);
+        return sorted;
     }
 
     private sealed class MutablePool

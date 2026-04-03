@@ -18,7 +18,7 @@ export function PoolAssignmentCard({ pool, dtuLimits, poolTier, onDatabaseClick 
   const poolMonthlyCost = snapped.monthlyPrice
 
   const individualMonthlyCost = pool.databaseNames.reduce(
-    (sum, name) => sum + getSingleDbMonthlyCost(dtuLimits[name] ?? 0, 'standard'),
+    (sum, name) => sum + getSingleDbMonthlyCost(dtuLimits[name] ?? 0, poolTier),
     0,
   )
 

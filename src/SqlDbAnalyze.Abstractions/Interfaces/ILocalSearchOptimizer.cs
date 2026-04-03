@@ -7,5 +7,6 @@ public interface ILocalSearchOptimizer
     PoolOptimizationResult Improve(
         PoolOptimizationResult initial,
         IReadOnlyList<DatabaseProfile> profiles,
-        PoolOptimizerOptions options);
+        PoolOptimizerOptions options,
+        CancellationToken cancellationToken = default);
 }

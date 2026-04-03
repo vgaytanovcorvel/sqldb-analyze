@@ -153,8 +153,8 @@ public class MetricsCacheService(
             MaxDatabasesPerPool: request.MaxDatabasesPerPool,
             MinDiversificationRatio: request.MinDiversificationRatio);
 
-        var initial = poolBuilder.BuildPools(profiles, options);
-        return localSearchOptimizer.Improve(initial, profiles, options);
+        var initial = poolBuilder.BuildPools(profiles, options, cancellationToken);
+        return localSearchOptimizer.Improve(initial, profiles, options, cancellationToken);
     }
 
     private static DtuTimeSeries ConvertToAbsoluteDtuTimeSeries(
@@ -167,12 +167,9 @@ public class MetricsCacheService(
         foreach (var name in databaseNames)
         {
             if (!timeSeries.DatabaseValues.TryGetValue(name, out var percentValues)) continue;
+            if (!dtuLimits.TryGetValue(name, out var dtuLimit) || dtuLimit <= 0) continue;
 
-            var dtuLimit = dtuLimits.TryGetValue(name, out var limit) ? limit : 0;
-
-            absoluteValues[name] = dtuLimit > 0
-                ? percentValues.Select(pct => pct / 100.0 * dtuLimit).ToList()
-                : percentValues;
+            absoluteValues[name] = percentValues.Select(pct => pct / 100.0 * dtuLimit).ToList();
         }
 
         return new DtuTimeSeries(timeSeries.Timestamps, absoluteValues);

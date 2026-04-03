@@ -6,5 +6,6 @@ public interface IPoolBuilder
 {
     PoolOptimizationResult BuildPools(
         IReadOnlyList<DatabaseProfile> profiles,
-        PoolOptimizerOptions options);
+        PoolOptimizerOptions options,
+        CancellationToken cancellationToken = default);
 }

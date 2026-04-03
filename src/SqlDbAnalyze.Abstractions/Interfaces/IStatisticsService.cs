@@ -6,6 +6,8 @@ public interface IStatisticsService
 
     double Percentile(IReadOnlyList<double> values, double p);
 
+    double PercentilePreSorted(double[] sortedValues, double p);
+
     double PearsonCorrelation(IReadOnlyList<double> x, IReadOnlyList<double> y);
 
     IReadOnlyList<double> SumSeries(IReadOnlyList<IReadOnlyList<double>> series);
