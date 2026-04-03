@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { PoolAssignment } from '../../../domain/models'
 import type { PoolTier } from '../../../domain/azure-pricing'
 import { snapToPoolTier, getSingleDbMonthlyCost } from '../../../domain/azure-pricing'
@@ -10,11 +11,12 @@ interface PoolAssignmentCardProps {
 }
 
 export function PoolAssignmentCard({ pool, dtuLimits, poolTier }: PoolAssignmentCardProps) {
+  const [dbExpanded, setDbExpanded] = useState(false)
   const snapped = snapToPoolTier(pool.recommendedCapacity, poolTier)
   const poolMonthlyCost = snapped.monthlyPrice
 
   const individualMonthlyCost = pool.databaseNames.reduce(
-    (sum, name) => sum + getSingleDbMonthlyCost(dtuLimits[name] ?? 0, poolTier),
+    (sum, name) => sum + getSingleDbMonthlyCost(dtuLimits[name] ?? 0, 'standard'),
     0,
   )
 
@@ -79,16 +81,27 @@ export function PoolAssignmentCard({ pool, dtuLimits, poolTier }: PoolAssignment
       </div>
 
       <div className={styles.databases}>
-        <span className={styles.dbLabel}>Databases:</span>
-        <ul className={styles.dbList}>
-          {pool.databaseNames.map((name) => (
-            <li key={name} className={styles.dbItem}>
-              {name}
-              <span className={styles.dbDtu}>{dtuLimits[name] ?? '?'} DTU</span>
-              <span className={styles.dbCost}>${getSingleDbMonthlyCost(dtuLimits[name] ?? 0, poolTier).toFixed(0)}/mo</span>
-            </li>
-          ))}
-        </ul>
+        <button className={styles.dbToggle} onClick={() => setDbExpanded(!dbExpanded)}>
+          <svg
+            className={`${styles.dbChevron} ${dbExpanded ? styles.dbChevronOpen : ''}`}
+            width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2"
+          >
+            <path d="M6 4l4 4-4 4" />
+          </svg>
+          <span className={styles.dbLabel}>Databases</span>
+          <span className={styles.dbToggleCount}>{pool.databaseNames.length}</span>
+        </button>
+        {dbExpanded && (
+          <ul className={styles.dbList}>
+            {pool.databaseNames.map((name) => (
+              <li key={name} className={styles.dbItem}>
+                {name}
+                <span className={styles.dbDtu}>{dtuLimits[name] ?? '?'} DTU</span>
+                <span className={styles.dbCost}>${getSingleDbMonthlyCost(dtuLimits[name] ?? 0, poolTier).toFixed(0)}/mo</span>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   )

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import type { DtuTimeSeries } from '../../../domain/models'
 import styles from './database-dtu-chart.module.css'
 
@@ -73,7 +74,7 @@ export function DatabaseDtuChart({ timeSeries, databaseName, dtuLimit, recommend
 
   const isDifferent = recommendedDtu !== null && dtuLimit > 0 && recommendedDtu !== dtuLimit
 
-  return (
+  return createPortal(
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.popup} onClick={(e) => e.stopPropagation()}>
         <div className={styles.header}>
@@ -122,7 +123,8 @@ export function DatabaseDtuChart({ timeSeries, databaseName, dtuLimit, recommend
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
 

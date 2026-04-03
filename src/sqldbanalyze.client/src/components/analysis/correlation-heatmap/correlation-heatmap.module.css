@@ -51,6 +51,59 @@
   text-overflow: ellipsis;
 }
 
+.dbLink {
+  cursor: pointer;
+}
+
+.dbLink:hover {
+  color: var(--color-brand);
+  text-decoration: underline;
+}
+
+.copyButton {
+  display: none;
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  font-size: 10px;
+  line-height: 1;
+  padding: 1px 3px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.copyButton:hover {
+  color: var(--color-brand);
+  border-color: var(--color-brand);
+  background: var(--color-brand-subtle);
+}
+
+.headerCell {
+  position: relative;
+}
+
+.headerCell:hover .copyButton {
+  display: inline-block;
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline-start: 50%;
+  transform: rotate(180deg) translateX(50%);
+  writing-mode: horizontal-tb;
+}
+
+.rowHeader {
+  position: relative;
+}
+
+.rowHeader:hover .copyButton {
+  display: inline-block;
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-end: var(--space-1);
+  transform: translateY(-50%);
+}
+
 .diagonal {
   background: var(--gray-100);
 }

@@ -42,7 +42,7 @@ function buildPoolSection(pool: PoolAssignment, dtuLimits: Readonly<Record<strin
   const snapped = snapToPoolTier(pool.recommendedCapacity, poolTier)
   const poolCost = snapped.monthlyPrice
   const individualCost = pool.databaseNames.reduce(
-    (sum, name) => sum + getSingleDbMonthlyCost(dtuLimits[name] ?? 0, poolTier),
+    (sum, name) => sum + getSingleDbMonthlyCost(dtuLimits[name] ?? 0, 'standard'),
     0,
   )
   const savings = individualCost - poolCost

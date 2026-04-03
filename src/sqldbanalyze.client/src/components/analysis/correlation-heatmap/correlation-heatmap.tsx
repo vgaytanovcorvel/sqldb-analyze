@@ -1,13 +1,23 @@
+import { useState } from 'react'
 import type { PoolabilityMetrics } from '../../../domain/models'
 import styles from './correlation-heatmap.module.css'
 
 interface CorrelationHeatmapProps {
   readonly data: readonly PoolabilityMetrics[]
+  readonly onDatabaseClick?: (name: string) => void
 }
 
-export function CorrelationHeatmap({ data }: CorrelationHeatmapProps) {
+export function CorrelationHeatmap({ data, onDatabaseClick }: CorrelationHeatmapProps) {
   const dbNames = extractDatabaseNames(data)
   const correlationMap = buildCorrelationMap(data)
+  const [copiedName, setCopiedName] = useState<string | null>(null)
+
+  function handleCopyName(name: string, e: React.MouseEvent) {
+    e.stopPropagation()
+    navigator.clipboard.writeText(name)
+    setCopiedName(name)
+    setTimeout(() => setCopiedName((prev) => prev === name ? null : prev), 1500)
+  }
 
   return (
     <div>
@@ -17,8 +27,21 @@ export function CorrelationHeatmap({ data }: CorrelationHeatmapProps) {
             <tr>
               <th />
               {dbNames.map((name) => (
-                <th key={name} className={styles.headerCell} title={name}>
-                  {name}
+                <th key={name} className={styles.headerCell}>
+                  <span
+                    className={onDatabaseClick ? styles.dbLink : undefined}
+                    title={name}
+                    onClick={onDatabaseClick ? () => onDatabaseClick(name) : undefined}
+                  >
+                    {name}
+                  </span>
+                  <button
+                    className={styles.copyButton}
+                    title={`Copy: ${name}`}
+                    onClick={(e) => handleCopyName(name, e)}
+                  >
+                    {copiedName === name ? '\u2713' : '\u2398'}
+                  </button>
                 </th>
               ))}
             </tr>
@@ -26,7 +49,22 @@ export function CorrelationHeatmap({ data }: CorrelationHeatmapProps) {
           <tbody>
             {dbNames.map((rowDb) => (
               <tr key={rowDb}>
-                <td className={styles.rowHeader} title={rowDb}>{rowDb}</td>
+                <td className={styles.rowHeader}>
+                  <span
+                    className={onDatabaseClick ? styles.dbLink : undefined}
+                    title={rowDb}
+                    onClick={onDatabaseClick ? () => onDatabaseClick(rowDb) : undefined}
+                  >
+                    {rowDb}
+                  </span>
+                  <button
+                    className={styles.copyButton}
+                    title={`Copy: ${rowDb}`}
+                    onClick={(e) => handleCopyName(rowDb, e)}
+                  >
+                    {copiedName === rowDb ? '\u2713' : '\u2398'}
+                  </button>
+                </td>
                 {dbNames.map((colDb) => {
                   if (rowDb === colDb) {
                     return (
