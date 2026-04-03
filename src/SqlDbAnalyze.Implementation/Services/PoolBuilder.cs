@@ -21,13 +21,17 @@ public class PoolBuilder(
         foreach (var profile in remaining)
             PlaceDatabase(profile, pools, options);
 
-        var isolatedPools = isolated.Select((name, i) => BuildIsolatedPool(profiles, name, i + pools.Count, options));
-        var allPools = pools.Select((p, i) => ToAssignment(p, i, options)).Concat(isolatedPools).ToList();
+        var candidatePools = pools.Select((p, i) => ToAssignment(p, i, options)).ToList();
+        var demoted = DemoteLowDiversification(candidatePools, isolated, options);
+
+        var isolatedPools = demoted.isolated
+            .Select((name, i) => BuildIsolatedPool(profiles, name, i + demoted.kept.Count, options));
+        var allPools = demoted.kept.Concat(isolatedPools).ToList();
 
         return new PoolOptimizationResult(
             allPools,
             allPools.Sum(p => p.RecommendedCapacity),
-            isolated);
+            demoted.isolated);
     }
 
     private static List<string> ExtractIsolated(
@@ -123,6 +127,25 @@ public class PoolBuilder(
             profile.Peak,
             1.0,
             statisticsService.OverloadFraction(profile.DtuValues, capacity));
+    }
+
+    private static (List<PoolAssignment> kept, List<string> isolated) DemoteLowDiversification(
+        List<PoolAssignment> candidatePools,
+        List<string> alreadyIsolated,
+        PoolOptimizerOptions options)
+    {
+        var kept = new List<PoolAssignment>();
+        var isolated = new List<string>(alreadyIsolated);
+
+        foreach (var pool in candidatePools)
+        {
+            if (pool.DiversificationRatio >= options.MinDiversificationRatio)
+                kept.Add(pool);
+            else
+                isolated.AddRange(pool.DatabaseNames);
+        }
+
+        return (kept, isolated);
     }
 
     private sealed class MutablePool

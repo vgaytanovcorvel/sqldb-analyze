@@ -2,15 +2,17 @@ import { useState } from 'react'
 import type { PoolAssignment } from '../../../domain/models'
 import type { PoolTier } from '../../../domain/azure-pricing'
 import { snapToPoolTier, getSingleDbMonthlyCost } from '../../../domain/azure-pricing'
+import { DbNameLink } from '../../shared/db-name-link/db-name-link'
 import styles from './pool-assignment-card.module.css'
 
 interface PoolAssignmentCardProps {
   readonly pool: PoolAssignment
   readonly dtuLimits: Readonly<Record<string, number>>
   readonly poolTier: PoolTier
+  readonly onDatabaseClick?: (name: string) => void
 }
 
-export function PoolAssignmentCard({ pool, dtuLimits, poolTier }: PoolAssignmentCardProps) {
+export function PoolAssignmentCard({ pool, dtuLimits, poolTier, onDatabaseClick }: PoolAssignmentCardProps) {
   const [dbExpanded, setDbExpanded] = useState(false)
   const snapped = snapToPoolTier(pool.recommendedCapacity, poolTier)
   const poolMonthlyCost = snapped.monthlyPrice
@@ -95,7 +97,9 @@ export function PoolAssignmentCard({ pool, dtuLimits, poolTier }: PoolAssignment
           <ul className={styles.dbList}>
             {pool.databaseNames.map((name) => (
               <li key={name} className={styles.dbItem}>
-                {name}
+                {onDatabaseClick
+                  ? <DbNameLink name={name} onClick={onDatabaseClick} />
+                  : name}
                 <span className={styles.dbDtu}>{dtuLimits[name] ?? '?'} DTU</span>
                 <span className={styles.dbCost}>${getSingleDbMonthlyCost(dtuLimits[name] ?? 0, poolTier).toFixed(0)}/mo</span>
               </li>

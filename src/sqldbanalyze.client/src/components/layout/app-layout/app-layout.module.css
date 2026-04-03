@@ -1,0 +1,135 @@
+.shell {
+  display: flex;
+  min-height: 100dvh;
+}
+
+.sidebar {
+  position: fixed;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: var(--sidebar-width);
+  background: var(--gray-950);
+  color: var(--white);
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  border-inline-end: 1px solid rgb(255 255 255 / 0.06);
+}
+
+.brand {
+  padding: var(--space-5) var(--space-5);
+  border-block-end: 1px solid rgb(255 255 255 / 0.06);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.brandMark {
+  color: var(--blue-400);
+  flex-shrink: 0;
+}
+
+.brandName {
+  font-size: var(--text-base);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--white);
+}
+
+.brandSub {
+  font-size: 0.6875rem;
+  color: var(--gray-500);
+  margin-block-start: 1px;
+}
+
+.navList {
+  list-style: none;
+  margin: 0;
+  padding: var(--space-3) var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  color: var(--gray-400);
+  text-decoration: none;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  transition: background var(--duration-fast) var(--ease-out),
+              color var(--duration-fast) var(--ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navItem {
+    transition: none;
+  }
+}
+
+.navItem:hover {
+  background: rgb(255 255 255 / 0.06);
+  color: var(--gray-200);
+}
+
+.navItemActive {
+  background: rgb(255 255 255 / 0.1);
+  color: var(--white);
+}
+
+.navItemActive:hover {
+  background: rgb(255 255 255 / 0.12);
+}
+
+.navIcon {
+  inline-size: 1.125rem;
+  block-size: 1.125rem;
+  flex-shrink: 0;
+}
+
+.sidebarFooter {
+  margin-block-start: auto;
+  padding: var(--space-4) var(--space-5);
+  border-block-start: 1px solid rgb(255 255 255 / 0.06);
+}
+
+.versionBadge {
+  font-size: 0.6875rem;
+  color: var(--gray-600);
+  font-family: var(--font-mono);
+}
+
+.main {
+  margin-inline-start: var(--sidebar-width);
+  flex: 1;
+  min-inline-size: 0;
+  background: var(--color-bg-page);
+}
+
+.content {
+  max-width: 1280px;
+  margin-inline: auto;
+  padding: var(--space-10) var(--space-10);
+}
+
+.pageHeader {
+  margin-block-end: var(--space-8);
+}
+
+.pageTitle {
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  letter-spacing: -0.03em;
+}
+
+.pageDescription {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin-block-start: var(--space-1);
+  margin-block-end: 0;
+}

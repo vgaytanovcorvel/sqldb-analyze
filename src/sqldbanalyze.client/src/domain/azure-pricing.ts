@@ -92,3 +92,15 @@ export function getSingleDbMonthlyCost(dtuLimit: number, tier: PoolTier): number
   }
   return tiers[tiers.length - 1]!.monthlyPrice
 }
+
+export function getSingleDbTiers(tier: PoolTier): readonly SingleDbTierOption[] {
+  return SINGLE_DB_TIERS_BY_TIER[tier]
+}
+
+export function snapToSingleDbTier(rawDtu: number, tier: PoolTier): SingleDbTierOption {
+  const tiers = SINGLE_DB_TIERS_BY_TIER[tier]
+  for (const t of tiers) {
+    if (t.dtu >= rawDtu) return t
+  }
+  return tiers[tiers.length - 1]!
+}

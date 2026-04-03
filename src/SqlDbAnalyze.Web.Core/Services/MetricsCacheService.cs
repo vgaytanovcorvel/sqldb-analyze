@@ -150,7 +150,8 @@ public class MetricsCacheService(
         var options = new PoolOptimizerOptions(
             TargetPercentile: request.TargetPercentile,
             SafetyFactor: request.SafetyFactor,
-            MaxDatabasesPerPool: request.MaxDatabasesPerPool);
+            MaxDatabasesPerPool: request.MaxDatabasesPerPool,
+            MinDiversificationRatio: request.MinDiversificationRatio);
 
         var initial = poolBuilder.BuildPools(profiles, options);
         return localSearchOptimizer.Improve(initial, profiles, options);

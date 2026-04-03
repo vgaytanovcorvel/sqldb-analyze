@@ -5,4 +5,5 @@ public record BuildPoolsRequest(
     IReadOnlyDictionary<string, int> DtuLimits,
     double TargetPercentile = 0.99,
     double SafetyFactor = 1.10,
-    int MaxDatabasesPerPool = 50);
+    int MaxDatabasesPerPool = 50,
+    double MinDiversificationRatio = 1.25);

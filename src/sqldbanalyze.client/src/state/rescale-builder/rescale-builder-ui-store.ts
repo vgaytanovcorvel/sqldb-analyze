@@ -1,33 +1,27 @@
 import { create } from 'zustand'
 import type { PoolTier } from '../../domain/azure-pricing'
 
-interface PoolBuilderUiState {
+interface RescaleBuilderUiState {
   selectedServerId: number | null
   selectedDatabaseNames: ReadonlySet<string>
   targetPercentile: number
   safetyFactor: number
-  maxDatabasesPerPool: number
-  minDiversificationRatio: number
-  poolTier: PoolTier
+  tier: PoolTier
   selectServer: (id: number | null) => void
   toggleDatabase: (name: string) => void
   selectAllDatabases: (names: readonly string[]) => void
   clearDatabaseSelection: () => void
   setTargetPercentile: (value: number) => void
   setSafetyFactor: (value: number) => void
-  setMaxDatabasesPerPool: (value: number) => void
-  setMinDiversificationRatio: (value: number) => void
-  setPoolTier: (value: PoolTier) => void
+  setTier: (value: PoolTier) => void
 }
 
-export const usePoolBuilderUiStore = create<PoolBuilderUiState>((set) => ({
+export const useRescaleBuilderUiStore = create<RescaleBuilderUiState>((set) => ({
   selectedServerId: null,
   selectedDatabaseNames: new Set<string>(),
   targetPercentile: 0.99,
   safetyFactor: 1.10,
-  maxDatabasesPerPool: 50,
-  minDiversificationRatio: 1.25,
-  poolTier: 'standard',
+  tier: 'standard',
   selectServer: (id) =>
     set({ selectedServerId: id, selectedDatabaseNames: new Set<string>() }),
   toggleDatabase: (name) =>
@@ -44,7 +38,5 @@ export const usePoolBuilderUiStore = create<PoolBuilderUiState>((set) => ({
   clearDatabaseSelection: () => set({ selectedDatabaseNames: new Set<string>() }),
   setTargetPercentile: (value) => set({ targetPercentile: value }),
   setSafetyFactor: (value) => set({ safetyFactor: value }),
-  setMaxDatabasesPerPool: (value) => set({ maxDatabasesPerPool: value }),
-  setMinDiversificationRatio: (value) => set({ minDiversificationRatio: value }),
-  setPoolTier: (value) => set({ poolTier: value }),
+  setTier: (value) => set({ tier: value }),
 }))

@@ -6,9 +6,12 @@ import { snapToPoolTier, getSingleDbMonthlyCost } from '../../domain/azure-prici
 import { useServers } from '../../state/servers/use-servers'
 import { useDatabases } from '../../state/analysis/use-databases'
 import { useCachedIntervals } from '../../state/analysis/use-cached-intervals'
+import { useTimeSeries } from '../../state/rescale-builder/use-time-series'
 import { usePoolBuilderUiStore } from '../../state/pool-builder/pool-builder-ui-store'
 import { useBuildPools } from '../../state/pool-builder/use-build-pools'
 import { PoolAssignmentCard } from '../../components/pool-builder/pool-assignment-card/pool-assignment-card'
+import { DatabaseDtuChart } from '../../components/analysis/database-dtu-chart/database-dtu-chart'
+import { DbNameLink } from '../../components/shared/db-name-link/db-name-link'
 import { printPoolReport } from '../../components/pool-builder/print-pool-report'
 import { AppLayout } from '../../components/layout/app-layout/app-layout'
 import styles from './pool-builder-page.module.css'
@@ -21,6 +24,7 @@ export function PoolBuilderPage() {
     targetPercentile,
     safetyFactor,
     maxDatabasesPerPool,
+    minDiversificationRatio,
     poolTier,
     selectServer,
     toggleDatabase,
@@ -29,15 +33,18 @@ export function PoolBuilderPage() {
     setTargetPercentile,
     setSafetyFactor,
     setMaxDatabasesPerPool,
+    setMinDiversificationRatio,
     setPoolTier,
   } = usePoolBuilderUiStore()
 
   const { data: databases = [] } = useDatabases(selectedServerId)
   const { data: intervals = [] } = useCachedIntervals(selectedServerId)
+  const { data: timeSeries } = useTimeSeries(selectedServerId)
   const buildPools = useBuildPools()
 
   const [dbPanelExpanded, setDbPanelExpanded] = useState(false)
   const [dbSearch, setDbSearch] = useState('')
+  const [focusedDbName, setFocusedDbName] = useState<string | null>(null)
 
   const hasIntervals = intervals.length > 0
   const allDatabaseNames = intervals.map((i) => i.databaseName)
@@ -102,6 +109,12 @@ export function PoolBuilderPage() {
     })
   }
 
+  function handleDbFocus(name: string) {
+    setFocusedDbName(focusedDbName === name ? null : name)
+  }
+
+  const focusedDbInfo = focusedDbName ? databases.find((d) => d.databaseName === focusedDbName) : null
+
   function handleBuildPools() {
     if (selectedServerId === null || selectionCount < 2) return
 
@@ -120,6 +133,7 @@ export function PoolBuilderPage() {
         targetPercentile,
         safetyFactor,
         maxDatabasesPerPool,
+        minDiversificationRatio,
       },
     })
   }
@@ -289,6 +303,19 @@ export function PoolBuilderPage() {
                 />
               </div>
 
+              <div className={styles.optionGroup}>
+                <label className={styles.optionLabel}>Min Diversification</label>
+                <input
+                  type="number"
+                  className={styles.optionInput}
+                  value={minDiversificationRatio}
+                  onChange={(e) => setMinDiversificationRatio(Number(e.target.value))}
+                  min={1.0}
+                  max={10.0}
+                  step={0.05}
+                />
+              </div>
+
               <button
                 className={styles.buildButton}
                 onClick={handleBuildPools}
@@ -374,7 +401,7 @@ export function PoolBuilderPage() {
                     <div className={styles.standaloneList}>
                       {standaloneDatabaseNames.map((name) => (
                         <div key={name} className={styles.standaloneItem}>
-                          <span className={styles.standaloneName}>{name}</span>
+                          <DbNameLink name={name} focused={focusedDbName === name} onClick={handleDbFocus} />
                           <span className={styles.standaloneCost}>
                             ${getSingleDbMonthlyCost(dtuLimitsMap[name] ?? 0, poolTier).toFixed(0)}/mo
                           </span>
@@ -392,12 +419,22 @@ export function PoolBuilderPage() {
                     pool={pool}
                     dtuLimits={dtuLimitsMap}
                     poolTier={poolTier}
+                    onDatabaseClick={handleDbFocus}
                   />
                 ))}
               </section>
             </>
           )}
         </>
+      )}
+      {focusedDbName && timeSeries && focusedDbInfo && (
+        <DatabaseDtuChart
+          timeSeries={timeSeries}
+          databaseName={focusedDbName}
+          dtuLimit={focusedDbInfo.dtuLimit}
+          recommendedDtu={null}
+          onClose={() => setFocusedDbName(null)}
+        />
       )}
     </AppLayout>
   )

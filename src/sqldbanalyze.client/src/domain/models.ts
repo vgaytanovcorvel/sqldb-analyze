@@ -66,6 +66,7 @@ export interface BuildPoolsRequest {
   readonly targetPercentile?: number
   readonly safetyFactor?: number
   readonly maxDatabasesPerPool?: number
+  readonly minDiversificationRatio?: number
 }
 
 export interface PoolAssignment {

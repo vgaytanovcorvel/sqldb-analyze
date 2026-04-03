@@ -12,6 +12,7 @@ import { CorrelationHeatmap } from '../../components/analysis/correlation-heatma
 import { PoolSimulation } from '../../components/analysis/pool-simulation/pool-simulation'
 import { DtuChart } from '../../components/analysis/dtu-chart/dtu-chart'
 import { DatabaseDtuChart } from '../../components/analysis/database-dtu-chart/database-dtu-chart'
+import { DbNameLink } from '../../components/shared/db-name-link/db-name-link'
 import { AppLayout } from '../../components/layout/app-layout/app-layout'
 import { useServices } from '../../core/providers'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -288,16 +289,11 @@ export function AnalysisPage() {
                             />
                           </td>
                           <td>
-                            <button
-                              className={`${styles.dbNameButton} ${focusedDatabaseName === interval.databaseName ? styles.dbNameFocused : ''}`}
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleDatabaseFocus(interval.databaseName)
-                              }}
-                              title="Click to view DTU chart for this database"
-                            >
-                              {interval.databaseName}
-                            </button>
+                            <DbNameLink
+                              name={interval.databaseName}
+                              focused={focusedDatabaseName === interval.databaseName}
+                              onClick={handleDatabaseFocus}
+                            />
                           </td>
                           <td className={styles.numericCell}>
                             {dbInfo ? formatSize(dbInfo.dataSizeMB) : '-'}

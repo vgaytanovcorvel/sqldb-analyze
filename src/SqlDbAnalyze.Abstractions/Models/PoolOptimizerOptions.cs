@@ -8,4 +8,5 @@ public record PoolOptimizerOptions(
     double PeakThreshold = 0.90,
     double? MaxPoolCapacity = null,
     IReadOnlyList<string>? IsolateDatabases = null,
-    int MaxSearchPasses = 10);
+    int MaxSearchPasses = 10,
+    double MinDiversificationRatio = 1.25);
