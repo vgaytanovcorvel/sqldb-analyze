@@ -10,7 +10,23 @@ obj/
 
 ## IDE
 .vs/
+.vscode/
+.idea/
 *.sln.docstates
 
 ## Claude Code
 .claude/
+
+## Node / Frontend
+node_modules/
+dist/
+*.tsbuildinfo
+
+## SQLite
+*.db
+*.db-shm
+*.db-wal
+
+## OS
+Thumbs.db
+.DS_Store

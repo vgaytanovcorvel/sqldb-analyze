@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using SqlDbAnalyze.Repository.Contexts;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers()
@@ -7,6 +10,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddSqlDbAnalyze();
+builder.Services.AddWebCore();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? "Data Source=sqldbanalyze.db";
@@ -23,6 +27,14 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = await scope.ServiceProvider
+        .GetRequiredService<IDbContextFactory<AppDbContext>>()
+        .CreateDbContextAsync();
+    await dbContext.Database.MigrateAsync();
+}
 
 if (app.Environment.IsDevelopment())
 {

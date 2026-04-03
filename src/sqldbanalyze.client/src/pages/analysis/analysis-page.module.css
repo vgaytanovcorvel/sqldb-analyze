@@ -1,0 +1,209 @@
+.page {
+  max-width: 1280px;
+  margin-inline: auto;
+  padding: var(--space-6);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-block-end: var(--space-6);
+}
+
+.title {
+  font-size: var(--text-2xl);
+  font-weight: 600;
+}
+
+.nav {
+  margin-block-end: var(--space-6);
+}
+
+.navLink {
+  color: var(--color-brand);
+  text-decoration: none;
+  font-size: var(--text-sm);
+}
+
+.navLink:hover {
+  text-decoration: underline;
+}
+
+.controls {
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+  margin-block-end: var(--space-6);
+  padding: var(--space-4);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.select {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  min-width: 200px;
+}
+
+.select:focus {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 1px;
+}
+
+.refreshButton {
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-brand);
+  color: var(--white);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.refreshButton:hover {
+  background: var(--color-brand-hover);
+}
+
+.refreshButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.hoursInput {
+  width: 80px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+}
+
+.hoursInput:focus {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 1px;
+}
+
+.label {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.section {
+  margin-block-end: var(--space-6);
+}
+
+.sectionTitle {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  margin-block-end: var(--space-4);
+}
+
+.intervalsTable {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.intervalsTable th,
+.intervalsTable td {
+  padding: var(--space-2) var(--space-4);
+  text-align: start;
+  font-size: var(--text-sm);
+  border-block-end: 1px solid var(--color-border);
+}
+
+.intervalsTable th {
+  background: var(--gray-50);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.empty {
+  text-align: center;
+  padding: var(--space-8);
+  color: var(--color-text-muted);
+}
+
+.error {
+  padding: var(--space-4);
+  background: var(--red-100);
+  color: var(--red-700);
+  border-radius: var(--radius-md);
+  margin-block-end: var(--space-4);
+}
+
+.matrixContainer {
+  overflow-x: auto;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+}
+
+.matrixTable {
+  border-collapse: collapse;
+  font-size: var(--text-xs);
+}
+
+.matrixTable th {
+  padding: var(--space-2) var(--space-3);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  text-align: start;
+}
+
+.matrixTable td {
+  padding: var(--space-2) var(--space-3);
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  min-width: 60px;
+  border: 1px solid var(--color-border);
+}
+
+.matrixHeaderCell {
+  writing-mode: vertical-lr;
+  transform: rotate(180deg);
+  padding: var(--space-3) var(--space-1);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  font-size: var(--text-xs);
+  max-height: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.diagonalCell {
+  background: var(--gray-100);
+}
+
+.legend {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-block-start: var(--space-3);
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+
+.legendBar {
+  display: flex;
+  height: 16px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  flex: 0 0 200px;
+}
+
+.legendSegment {
+  flex: 1;
+}

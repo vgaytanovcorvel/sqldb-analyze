@@ -9,13 +9,18 @@ export class ApiClient {
     return await res.json() as T
   }
 
-  async post<T>(path: string, body: unknown): Promise<T> {
+  async post<T>(path: string, body?: unknown): Promise<T> {
     const res = await fetch(`${this.baseUrl}${path}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+      headers: body !== undefined ? { 'Content-Type': 'application/json' } : {},
+      body: body !== undefined ? JSON.stringify(body) : undefined,
     })
     if (!res.ok) throw new AppError(`API error ${res.status}`, 'API_ERROR')
     return await res.json() as T
+  }
+
+  async delete(path: string): Promise<void> {
+    const res = await fetch(`${this.baseUrl}${path}`, { method: 'DELETE' })
+    if (!res.ok) throw new AppError(`API error ${res.status}`, 'API_ERROR')
   }
 }

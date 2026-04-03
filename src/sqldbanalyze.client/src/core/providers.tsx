@@ -1,13 +1,17 @@
 import { createContext, useContext, type ReactNode } from 'react'
 import { ApiClient } from './api-client'
+import { RegisteredServerRepository } from '../repositories/registered-server-repository'
+import { AnalysisRepository } from '../repositories/analysis-repository'
 
-interface Services {
-  apiClient: ApiClient
+export interface Services {
+  registeredServerRepository: RegisteredServerRepository
+  analysisRepository: AnalysisRepository
 }
 
 const apiClient = new ApiClient(import.meta.env.VITE_API_BASE_URL ?? '/api')
 const defaultServices: Services = {
-  apiClient,
+  registeredServerRepository: new RegisteredServerRepository(apiClient),
+  analysisRepository: new AnalysisRepository(apiClient),
 }
 
 const ServicesContext = createContext<Services>(defaultServices)
