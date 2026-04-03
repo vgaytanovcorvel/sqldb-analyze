@@ -9,6 +9,7 @@ import { useCachedIntervals } from '../../state/analysis/use-cached-intervals'
 import { useTimeSeries } from '../../state/rescale-builder/use-time-series'
 import { useRescaleBuilderUiStore } from '../../state/rescale-builder/rescale-builder-ui-store'
 import { DatabaseDtuChart } from '../../components/analysis/database-dtu-chart/database-dtu-chart'
+import { printRescaleReport } from '../../components/rescale-builder/print-rescale-report'
 import { DbNameLink } from '../../components/shared/db-name-link/db-name-link'
 import { AppLayout } from '../../components/layout/app-layout/app-layout'
 import styles from './rescale-builder-page.module.css'
@@ -84,6 +85,19 @@ export function RescaleBuilderPage() {
     )
     setResult(rescaleResult)
     setFilterMode('all')
+  }
+
+  const selectedServer = servers.find((s) => s.registeredServerId === selectedServerId)
+
+  function handlePrintReport() {
+    if (!selectedServer || !result) return
+    printRescaleReport({
+      serverName: `${selectedServer.name} (${selectedServer.serverName})`,
+      tier,
+      targetPercentile,
+      safetyFactor,
+      result,
+    })
   }
 
   function handleDbFocus(name: string) {
@@ -271,7 +285,7 @@ export function RescaleBuilderPage() {
 
           {result && (
             <>
-              <ResultsSummary result={result} />
+              <ResultsSummary result={result} onPrintReport={handlePrintReport} />
 
               <section className={styles.tableSection}>
                 <div className={styles.filterTabs}>
@@ -330,10 +344,15 @@ export function RescaleBuilderPage() {
   )
 }
 
-function ResultsSummary({ result }: { result: RescaleResult }) {
+function ResultsSummary({ result, onPrintReport }: { result: RescaleResult; onPrintReport: () => void }) {
   return (
     <section className={styles.summary}>
-      <h2 className={styles.summaryTitle}>Results</h2>
+      <div className={styles.summaryHeader}>
+        <h2 className={styles.summaryTitle}>Results</h2>
+        <button className={styles.printButton} onClick={onPrintReport}>
+          Print Report
+        </button>
+      </div>
       <div className={styles.statsGrid}>
         <div className={styles.stat}>
           <span className={styles.statLabel}>Databases</span>
