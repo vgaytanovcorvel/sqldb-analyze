@@ -10,6 +10,12 @@ public interface IAzureMetricsService
         string serverName,
         CancellationToken cancellationToken);
 
+    Task<IReadOnlyList<DatabaseInfo>> GetDatabaseInfoAsync(
+        string subscriptionId,
+        string resourceGroupName,
+        string serverName,
+        CancellationToken cancellationToken);
+
     Task<IReadOnlyList<DtuMetric>> GetDtuMetricsAsync(
         string subscriptionId,
         string resourceGroupName,

@@ -13,11 +13,15 @@ public class AnalysisControllerTests
     private readonly IMetricsCacheService _service = Substitute.For<IMetricsCacheService>();
 
     [Fact]
-    public async Task GetDatabases_Should_ReturnOkWithNames_When_ServerExists()
+    public async Task GetDatabases_Should_ReturnOkWithDatabaseInfo_When_ServerExists()
     {
         // Arrange
-        _service.GetDatabaseNamesAsync(1, Arg.Any<CancellationToken>())
-            .Returns(new List<string> { "DbA", "DbB" });
+        var databases = new List<DatabaseInfo>
+        {
+            new("DbA", 1024.0, 50, null),
+            new("DbB", 2048.0, 100, "pool-1")
+        };
+        _service.GetDatabaseInfoAsync(1, Arg.Any<CancellationToken>()).Returns(databases);
         var controller = new AnalysisController(_service);
 
         // Act
@@ -25,8 +29,10 @@ public class AnalysisControllerTests
 
         // Assert
         var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
-        var data = okResult.Value.Should().BeAssignableTo<IReadOnlyList<string>>().Subject;
-        data.Should().BeEquivalentTo(["DbA", "DbB"]);
+        var data = okResult.Value.Should().BeAssignableTo<IReadOnlyList<DatabaseInfo>>().Subject;
+        data.Should().HaveCount(2);
+        data[0].DatabaseName.Should().Be("DbA");
+        data[1].ElasticPoolName.Should().Be("pool-1");
     }
 
     [Fact]

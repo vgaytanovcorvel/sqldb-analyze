@@ -1,11 +1,18 @@
 import type { ApiClient } from '../core/api-client'
-import type { DatabaseMetricsInterval, DtuTimeSeries, PoolabilityMetrics } from '../domain/models'
+import type {
+  DatabaseInfo,
+  DatabaseMetricsInterval,
+  DtuTimeSeries,
+  PoolabilityMetrics,
+  PoolSimulationRequest,
+  PoolSimulationResult,
+} from '../domain/models'
 
 export class AnalysisRepository {
   constructor(private readonly http: ApiClient) {}
 
-  async analysisFetchDatabases(serverId: number): Promise<readonly string[]> {
-    return this.http.get<string[]>(`/analysis/${serverId}/databases`)
+  async analysisFetchDatabases(serverId: number): Promise<readonly DatabaseInfo[]> {
+    return this.http.get<DatabaseInfo[]>(`/analysis/${serverId}/databases`)
   }
 
   async analysisFetchIntervals(serverId: number): Promise<readonly DatabaseMetricsInterval[]> {
@@ -22,5 +29,9 @@ export class AnalysisRepository {
 
   async analysisFetchCorrelationMatrix(serverId: number): Promise<readonly PoolabilityMetrics[]> {
     return this.http.get<PoolabilityMetrics[]>(`/analysis/${serverId}/correlation-matrix`)
+  }
+
+  async analysisSimulatePool(serverId: number, request: PoolSimulationRequest): Promise<PoolSimulationResult> {
+    return this.http.post<PoolSimulationResult>(`/analysis/${serverId}/simulate-pool`, request)
   }
 }

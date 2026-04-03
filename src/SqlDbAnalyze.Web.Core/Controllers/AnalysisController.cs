@@ -11,11 +11,11 @@ public class AnalysisController(
     IMetricsCacheService metricsCacheService) : ControllerBase
 {
     [HttpGet("{serverId}/databases")]
-    [ProducesResponseType(typeof(IReadOnlyList<string>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IReadOnlyList<string>>> GetDatabases(
+    [ProducesResponseType(typeof(IReadOnlyList<DatabaseInfo>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IReadOnlyList<DatabaseInfo>>> GetDatabases(
         int serverId, CancellationToken cancellationToken)
     {
-        var databases = await metricsCacheService.GetDatabaseNamesAsync(serverId, cancellationToken);
+        var databases = await metricsCacheService.GetDatabaseInfoAsync(serverId, cancellationToken);
         return Ok(databases);
     }
 
@@ -58,5 +58,17 @@ public class AnalysisController(
         var matrix = await metricsCacheService.GetCorrelationMatrixAsync(
             serverId, cancellationToken);
         return Ok(matrix);
+    }
+
+    [HttpPost("{serverId}/simulate-pool")]
+    [ProducesResponseType(typeof(PoolSimulationResult), StatusCodes.Status200OK)]
+    public async Task<ActionResult<PoolSimulationResult>> SimulatePool(
+        int serverId,
+        [FromBody] PoolSimulationRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await metricsCacheService.SimulatePoolAsync(
+            serverId, request, cancellationToken);
+        return Ok(result);
     }
 }

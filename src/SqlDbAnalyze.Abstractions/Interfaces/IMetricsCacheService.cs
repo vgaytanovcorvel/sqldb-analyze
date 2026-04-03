@@ -6,6 +6,8 @@ public interface IMetricsCacheService
 {
     Task<IReadOnlyList<string>> GetDatabaseNamesAsync(int registeredServerId, CancellationToken cancellationToken);
 
+    Task<IReadOnlyList<DatabaseInfo>> GetDatabaseInfoAsync(int registeredServerId, CancellationToken cancellationToken);
+
     Task<IReadOnlyList<DatabaseMetricsInterval>> GetCachedIntervalsAsync(
         int registeredServerId,
         CancellationToken cancellationToken);
@@ -21,5 +23,10 @@ public interface IMetricsCacheService
 
     Task<IReadOnlyList<PoolabilityMetrics>> GetCorrelationMatrixAsync(
         int registeredServerId,
+        CancellationToken cancellationToken);
+
+    Task<PoolSimulationResult> SimulatePoolAsync(
+        int registeredServerId,
+        PoolSimulationRequest request,
         CancellationToken cancellationToken);
 }

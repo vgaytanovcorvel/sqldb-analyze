@@ -14,9 +14,10 @@ public class MetricsCacheServiceTests
     private readonly IAzureMetricsService _azureMetrics = Substitute.For<IAzureMetricsService>();
     private readonly ICaptureService _captureService = Substitute.For<ICaptureService>();
     private readonly IPoolabilityService _poolabilityService = Substitute.For<IPoolabilityService>();
+    private readonly IStatisticsService _statisticsService = Substitute.For<IStatisticsService>();
 
     private MetricsCacheService CreateService() =>
-        new(_serverRepo, _cacheRepo, _azureMetrics, _captureService, _poolabilityService);
+        new(_serverRepo, _cacheRepo, _azureMetrics, _captureService, _poolabilityService, _statisticsService);
 
     private static readonly RegisteredServer TestServer = new(1, "Test", "sub-1", "rg-1", "sql-1", DateTimeOffset.UtcNow);
 

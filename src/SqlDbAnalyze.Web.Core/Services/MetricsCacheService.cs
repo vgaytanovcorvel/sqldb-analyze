@@ -8,7 +8,8 @@ public class MetricsCacheService(
     IMetricsCacheRepository metricsCacheRepository,
     IAzureMetricsService azureMetricsService,
     ICaptureService captureService,
-    IPoolabilityService poolabilityService) : IMetricsCacheService
+    IPoolabilityService poolabilityService,
+    IStatisticsService statisticsService) : IMetricsCacheService
 {
     public virtual async Task<IReadOnlyList<string>> GetDatabaseNamesAsync(
         int registeredServerId, CancellationToken cancellationToken)
@@ -58,6 +59,19 @@ public class MetricsCacheService(
             registeredServerId, cancellationToken);
     }
 
+    public virtual async Task<IReadOnlyList<DatabaseInfo>> GetDatabaseInfoAsync(
+        int registeredServerId, CancellationToken cancellationToken)
+    {
+        var server = await registeredServerRepository.RegisteredServerSingleByIdAsync(
+            registeredServerId, cancellationToken);
+
+        return await azureMetricsService.GetDatabaseInfoAsync(
+            server.SubscriptionId,
+            server.ResourceGroupName,
+            server.ServerName,
+            cancellationToken);
+    }
+
     public virtual async Task<IReadOnlyList<PoolabilityMetrics>> GetCorrelationMatrixAsync(
         int registeredServerId, CancellationToken cancellationToken)
     {
@@ -78,5 +92,65 @@ public class MetricsCacheService(
         }
 
         return results;
+    }
+
+    public virtual async Task<PoolSimulationResult> SimulatePoolAsync(
+        int registeredServerId,
+        PoolSimulationRequest request,
+        CancellationToken cancellationToken)
+    {
+        var timeSeries = await metricsCacheRepository.MetricsCacheGetTimeSeriesAsync(
+            registeredServerId, cancellationToken);
+
+        var dtuSeries = ConvertToAbsoluteDtu(timeSeries, request);
+        var combinedLoad = statisticsService.SumSeries(dtuSeries);
+
+        var sumIndividualLimits = request.DatabaseNames
+            .Where(request.DtuLimits.ContainsKey)
+            .Sum(name => request.DtuLimits[name]);
+
+        var p95 = statisticsService.Percentile(combinedLoad, 0.95);
+        var p99 = statisticsService.Percentile(combinedLoad, 0.99);
+        var peak = combinedLoad.Count > 0 ? combinedLoad.Max() : 0;
+        var mean = statisticsService.Mean(combinedLoad);
+
+        const double safetyFactor = 1.10;
+        var recommendedDtu = p99 * safetyFactor;
+
+        var diversificationRatio = sumIndividualLimits > 0 ? (double)sumIndividualLimits / recommendedDtu : 1;
+        var overloadFraction = statisticsService.OverloadFraction(combinedLoad, recommendedDtu);
+
+        var savingsPercent = sumIndividualLimits > 0
+            ? (1 - recommendedDtu / sumIndividualLimits) * 100
+            : 0;
+
+        return new PoolSimulationResult(
+            request.DatabaseNames,
+            p95, p99, peak, mean,
+            diversificationRatio,
+            overloadFraction,
+            recommendedDtu,
+            sumIndividualLimits,
+            savingsPercent);
+    }
+
+    private IReadOnlyList<IReadOnlyList<double>> ConvertToAbsoluteDtu(
+        DtuTimeSeries timeSeries,
+        PoolSimulationRequest request)
+    {
+        return request.DatabaseNames
+            .Where(name => timeSeries.DatabaseValues.ContainsKey(name))
+            .Select(name =>
+            {
+                var percentValues = timeSeries.DatabaseValues[name];
+                var dtuLimit = request.DtuLimits.TryGetValue(name, out var limit) ? limit : 0;
+
+                if (dtuLimit <= 0) return percentValues;
+
+                return (IReadOnlyList<double>)percentValues
+                    .Select(pct => pct / 100.0 * dtuLimit)
+                    .ToList();
+            })
+            .ToList();
     }
 }
