@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import type { DtuTimeSeries } from '../../../domain/models'
 import styles from './database-dtu-chart.module.css'
 
@@ -12,8 +12,26 @@ interface DatabaseDtuChartProps {
 
 export function DatabaseDtuChart({ timeSeries, databaseName, dtuLimit, recommendedDtu, onClose }: DatabaseDtuChartProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-
   const values = timeSeries.databaseValues[databaseName]
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [onClose])
+
+  const stats = useMemo(() => {
+    if (!values || values.length === 0 || dtuLimit <= 0) return null
+    const abs = values.map((v) => (v * dtuLimit) / 100)
+    const sorted = [...abs].sort((a, b) => a - b)
+    const p95 = sorted[Math.max(0, Math.ceil(sorted.length * 0.95) - 1)] ?? 0
+    const p99 = sorted[Math.max(0, Math.ceil(sorted.length * 0.99) - 1)] ?? 0
+    const peak = sorted[sorted.length - 1] ?? 0
+    const mean = abs.reduce((a, b) => a + b, 0) / abs.length
+    return { p95, p99, peak, mean }
+  }, [values, dtuLimit])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -37,7 +55,8 @@ export function DatabaseDtuChart({ timeSeries, databaseName, dtuLimit, recommend
     ctx.clearRect(0, 0, width, height)
 
     const absoluteValues = values.map((v) => (dtuLimit > 0 ? (v * dtuLimit) / 100 : v))
-    const maxVal = Math.max(...absoluteValues, dtuLimit, recommendedDtu ?? 0) * 1.05
+    const peakUsage = Math.max(...absoluteValues, 1)
+    const maxVal = peakUsage * 1.15
 
     drawGrid(ctx, padding, chartWidth, chartHeight, maxVal)
     drawDtuLimitLine(ctx, padding, chartWidth, chartHeight, maxVal, dtuLimit)
@@ -52,28 +71,56 @@ export function DatabaseDtuChart({ timeSeries, databaseName, dtuLimit, recommend
 
   if (!values || values.length === 0) return null
 
+  const isDifferent = recommendedDtu !== null && dtuLimit > 0 && recommendedDtu !== dtuLimit
+
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <span className={styles.title}>{databaseName}</span>
-        <button className={styles.closeButton} onClick={onClose}>Close</button>
-      </div>
-      <canvas ref={canvasRef} className={styles.canvas} />
-      <div className={styles.legend}>
-        <span className={styles.legendItem}>
-          <span className={styles.legendSwatch} style={{ background: '#2563eb' }} />
-          DTU Usage
-        </span>
-        <span className={styles.legendItem}>
-          <span className={styles.legendSwatch} style={{ background: '#9ca3af', height: '2px' }} />
-          Current Limit ({dtuLimit} DTU)
-        </span>
-        {recommendedDtu !== null && recommendedDtu !== dtuLimit && (
-          <span className={styles.legendItem}>
-            <span className={styles.legendSwatch} style={{ background: '#16a34a' }} />
-            Recommended ({recommendedDtu} DTU)
-          </span>
+    <div className={styles.overlay} onClick={onClose}>
+      <div className={styles.popup} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.header}>
+          <span className={styles.title}>{databaseName}</span>
+          <button className={styles.closeButton} onClick={onClose}>Close</button>
+        </div>
+        {stats && (
+          <div className={styles.stats}>
+            <span className={styles.stat}>
+              Current: <span className={styles.statValue}>{dtuLimit} DTU</span>
+            </span>
+            {isDifferent && (
+              <span className={styles.stat}>
+                Recommended: <span className={`${styles.statValue} ${styles.statHighlight}`}>{recommendedDtu} DTU</span>
+              </span>
+            )}
+            <span className={styles.stat}>
+              P95: <span className={styles.statValue}>{stats.p95.toFixed(1)}</span>
+            </span>
+            <span className={styles.stat}>
+              P99: <span className={styles.statValue}>{stats.p99.toFixed(1)}</span>
+            </span>
+            <span className={styles.stat}>
+              Peak: <span className={styles.statValue}>{stats.peak.toFixed(1)}</span>
+            </span>
+            <span className={styles.stat}>
+              Mean: <span className={styles.statValue}>{stats.mean.toFixed(1)}</span>
+            </span>
+          </div>
         )}
+        <canvas ref={canvasRef} className={styles.canvas} />
+        <div className={styles.legend}>
+          <span className={styles.legendItem}>
+            <span className={styles.legendSwatch} style={{ background: '#2563eb' }} />
+            DTU Usage
+          </span>
+          <span className={styles.legendItem}>
+            <span className={styles.legendSwatch} style={{ background: '#9ca3af', height: '2px' }} />
+            Current Limit ({dtuLimit} DTU)
+          </span>
+          {isDifferent && (
+            <span className={styles.legendItem}>
+              <span className={styles.legendSwatch} style={{ background: '#16a34a' }} />
+              Recommended ({recommendedDtu} DTU)
+            </span>
+          )}
+        </div>
       </div>
     </div>
   )

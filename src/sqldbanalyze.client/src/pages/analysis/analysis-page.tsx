@@ -278,16 +278,13 @@ export function AnalysisPage() {
           )}
 
           {focusedDatabaseName && timeSeries && focusedDbInfo && (
-            <section className={styles.section}>
-              <h2 className={styles.sectionTitle}>Database DTU Detail</h2>
-              <DatabaseDtuChart
-                timeSeries={timeSeries}
-                databaseName={focusedDatabaseName}
-                dtuLimit={focusedDbInfo.dtuLimit}
-                recommendedDtu={recommendations.get(focusedDatabaseName) ?? null}
-                onClose={() => focusDatabase(null)}
-              />
-            </section>
+            <DatabaseDtuChart
+              timeSeries={timeSeries}
+              databaseName={focusedDatabaseName}
+              dtuLimit={focusedDbInfo.dtuLimit}
+              recommendedDtu={recommendations.get(focusedDatabaseName) ?? null}
+              onClose={() => focusDatabase(null)}
+            />
           )}
 
           {timeSeries && selectionCount > 0 && (
