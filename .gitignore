@@ -27,6 +27,15 @@ dist/
 *.db-shm
 *.db-wal
 
+## Screenshots
+*.png
+
+## Playwright MCP
+.playwright-mcp/
+
+## Markdown snapshots
+pool-builder-snapshot.md
+
 ## OS
 Thumbs.db
 .DS_Store
