@@ -19,6 +19,7 @@ public static class SqlDbAnalyzeServiceCollectionExtensions
         services.AddScoped<IStatisticsService, StatisticsService>();
         services.AddScoped<IPoolabilityService, PoolabilityService>();
         services.AddScoped<IPlacementScorer, PlacementScorer>();
+        services.AddScoped<IFillerPoolBuilder, FillerPoolBuilder>();
         services.AddScoped<IPoolBuilder, PoolBuilder>();
         services.AddScoped<ILocalSearchOptimizer, LocalSearchOptimizer>();
         services.AddScoped<ITimeSeriesCsvService, TimeSeriesCsvService>();

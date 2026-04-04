@@ -14,7 +14,8 @@ public class PoolBuilderTests
     {
         var poolabilityService = new PoolabilityService(statisticsService);
         var placementScorer = new PlacementScorer(statisticsService, poolabilityService);
-        sut = new PoolBuilder(placementScorer, statisticsService);
+        var fillerPoolBuilder = new FillerPoolBuilder(statisticsService);
+        sut = new PoolBuilder(placementScorer, statisticsService, fillerPoolBuilder);
     }
 
     [Fact]
@@ -125,6 +126,49 @@ public class PoolBuilderTests
         pool.DiversificationRatio.Should().BeGreaterThan(1.0);
     }
 
+    [Fact]
+    public void BuildPools_ShouldSeparateLowSignalIntoFillerPools_WhenMixedProfiles()
+    {
+        // Arrange -- db1/db2 are regular, db3/db4 are low-signal
+        var profiles = new List<DatabaseProfile>
+        {
+            BuildProfile("db1", [100.0, 80.0, 60.0, 40.0, 20.0]),
+            BuildProfile("db2", [20.0, 40.0, 60.0, 80.0, 100.0]),
+            BuildLowSignalProfile("db3", [0.0, 0.0, 1.0, 0.0, 0.0]),
+            BuildLowSignalProfile("db4", [0.0, 0.5, 0.0, 0.0, 0.0])
+        };
+        var options = new PoolOptimizerOptions();
+
+        // Act
+        var result = sut.BuildPools(profiles, options);
+
+        // Assert
+        var fillerPools = result.Pools.Where(p => p.IsFillerPool).ToList();
+        var regularPools = result.Pools.Where(p => !p.IsFillerPool).ToList();
+
+        fillerPools.Should().NotBeEmpty();
+        regularPools.Should().NotBeEmpty();
+        fillerPools.SelectMany(p => p.DatabaseNames).Should().BeEquivalentTo(["db3", "db4"]);
+    }
+
+    [Fact]
+    public void BuildPools_ShouldHandleAllLowSignal_WhenNoRegularDatabases()
+    {
+        // Arrange
+        var profiles = new List<DatabaseProfile>
+        {
+            BuildLowSignalProfile("db1", [0.0, 0.0, 1.0, 0.0, 0.0]),
+            BuildLowSignalProfile("db2", [0.0, 0.5, 0.0, 0.0, 0.0])
+        };
+        var options = new PoolOptimizerOptions();
+
+        // Act
+        var result = sut.BuildPools(profiles, options);
+
+        // Assert
+        result.Pools.Should().AllSatisfy(p => p.IsFillerPool.Should().BeTrue());
+    }
+
     private DatabaseProfile BuildProfile(string name, double[] values)
     {
         return new DatabaseProfile(
@@ -134,5 +178,18 @@ public class PoolBuilderTests
             statisticsService.Percentile(values, 0.95),
             statisticsService.Percentile(values, 0.99),
             values.Max());
+    }
+
+    private DatabaseProfile BuildLowSignalProfile(string name, double[] values)
+    {
+        return new DatabaseProfile(
+            name, values,
+            statisticsService.Mean(values),
+            statisticsService.Percentile(values, 0.95),
+            statisticsService.Percentile(values, 0.99),
+            values.Length > 0 ? values.Max() : 0,
+            StdDev: statisticsService.StandardDeviation(values),
+            ActiveFraction: 0.01,
+            IsLowSignal: true);
     }
 }

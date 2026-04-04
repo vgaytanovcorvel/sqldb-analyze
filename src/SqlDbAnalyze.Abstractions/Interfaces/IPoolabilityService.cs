@@ -10,4 +10,6 @@ public interface IPoolabilityService
         double peakThreshold);
 
     IReadOnlyList<DatabaseProfile> BuildProfiles(DtuTimeSeries timeSeries);
+
+    IReadOnlyList<DatabaseProfile> BuildProfiles(DtuTimeSeries timeSeries, PoolOptimizerOptions options);
 }

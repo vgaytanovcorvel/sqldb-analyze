@@ -34,6 +34,7 @@ public class LocalSearchOptimizer(IStatisticsService statisticsService) : ILocal
 
         foreach (var sourcePool in current.Pools)
         {
+            if (sourcePool.IsFillerPool) continue;
             cancellationToken.ThrowIfCancellationRequested();
             var move = FindBestMove(sourcePool, current.Pools, profileMap, options);
             if (move is not null)
@@ -73,6 +74,7 @@ public class LocalSearchOptimizer(IStatisticsService statisticsService) : ILocal
         foreach (var targetPool in allPools)
         {
             if (targetPool.PoolIndex == sourcePool.PoolIndex) continue;
+            if (targetPool.IsFillerPool) continue;
             if (targetPool.DatabaseNames.Count >= options.MaxDatabasesPerPool) continue;
 
             var saving = EvaluateMove(dbName, sourcePool, targetPool, profileMap, options);

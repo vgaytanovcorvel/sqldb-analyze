@@ -6,4 +6,7 @@ public record DatabaseProfile(
     double Mean,
     double P95,
     double P99,
-    double Peak);
+    double Peak,
+    double StdDev = 0,
+    double ActiveFraction = 0,
+    bool IsLowSignal = false);

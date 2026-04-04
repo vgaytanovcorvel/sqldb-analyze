@@ -5,7 +5,8 @@ namespace SqlDbAnalyze.Implementation.Services;
 
 public class PoolBuilder(
     IPlacementScorer placementScorer,
-    IStatisticsService statisticsService) : IPoolBuilder
+    IStatisticsService statisticsService,
+    IFillerPoolBuilder fillerPoolBuilder) : IPoolBuilder
 {
     public virtual PoolOptimizationResult BuildPools(
         IReadOnlyList<DatabaseProfile> profiles,
@@ -13,29 +14,57 @@ public class PoolBuilder(
         CancellationToken cancellationToken = default)
     {
         var isolated = ExtractIsolated(profiles, options);
-        var remaining = profiles
-            .Where(p => !isolated.Contains(p.DatabaseName))
-            .OrderByDescending(p => p.P99)
-            .ToList();
+        var (regular, lowSignal) = PartitionBySignal(profiles, isolated);
 
-        var pools = new List<MutablePool>();
-        foreach (var profile in remaining)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            PlaceDatabase(profile, pools, options);
-        }
-
-        var candidatePools = pools.Select((p, i) => ToAssignment(p, i, options)).ToList();
-        var demoted = DemoteLowDiversification(candidatePools, isolated, options);
+        var regularPools = BuildRegularPools(regular, options, cancellationToken);
+        var demoted = DemoteLowDiversification(regularPools, isolated, options);
 
         var isolatedPools = demoted.isolated
             .Select((name, i) => BuildIsolatedPool(profiles, name, i + demoted.kept.Count, options));
-        var allPools = demoted.kept.Concat(isolatedPools).ToList();
+        var allRegular = demoted.kept.Concat(isolatedPools).ToList();
+
+        var fillerPools = fillerPoolBuilder.BuildFillerPools(lowSignal, options, allRegular.Count);
+        var allPools = allRegular.Concat(fillerPools).ToList();
 
         return new PoolOptimizationResult(
             allPools,
             allPools.Sum(p => p.RecommendedCapacity),
             demoted.isolated);
+    }
+
+    private static (List<DatabaseProfile> regular, List<DatabaseProfile> lowSignal) PartitionBySignal(
+        IReadOnlyList<DatabaseProfile> profiles,
+        List<string> isolated)
+    {
+        var isolatedSet = isolated.ToHashSet();
+        var regular = new List<DatabaseProfile>();
+        var lowSignal = new List<DatabaseProfile>();
+
+        foreach (var p in profiles)
+        {
+            if (isolatedSet.Contains(p.DatabaseName)) continue;
+            if (p.IsLowSignal) lowSignal.Add(p);
+            else regular.Add(p);
+        }
+
+        return (regular, lowSignal);
+    }
+
+    private List<PoolAssignment> BuildRegularPools(
+        List<DatabaseProfile> regular,
+        PoolOptimizerOptions options,
+        CancellationToken cancellationToken)
+    {
+        var sorted = regular.OrderByDescending(p => p.P99).ToList();
+        var pools = new List<MutablePool>();
+
+        foreach (var profile in sorted)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            PlaceDatabase(profile, pools, options);
+        }
+
+        return pools.Select((p, i) => ToAssignment(p, i, options)).ToList();
     }
 
     private static List<string> ExtractIsolated(

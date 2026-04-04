@@ -222,6 +222,47 @@ public class StatisticsServiceTests
         result.Should().BeEquivalentTo(new[] { 111.0, 222.0, 333.0 });
     }
 
+    // --- StandardDeviation ---
+
+    [Fact]
+    public void StandardDeviation_ShouldReturnZero_WhenListIsEmpty()
+    {
+        // Arrange
+        IReadOnlyList<double> values = [];
+
+        // Act
+        var result = sut.StandardDeviation(values);
+
+        // Assert
+        result.Should().Be(0);
+    }
+
+    [Fact]
+    public void StandardDeviation_ShouldReturnZero_WhenAllValuesSame()
+    {
+        // Arrange
+        IReadOnlyList<double> values = [5.0, 5.0, 5.0, 5.0];
+
+        // Act
+        var result = sut.StandardDeviation(values);
+
+        // Assert
+        result.Should().Be(0);
+    }
+
+    [Fact]
+    public void StandardDeviation_ShouldReturnCorrectValue_WhenKnownValues()
+    {
+        // Arrange -- [2, 4, 4, 4, 5, 5, 7, 9], mean=5, variance=4, stddev=2
+        IReadOnlyList<double> values = [2.0, 4.0, 4.0, 4.0, 5.0, 5.0, 7.0, 9.0];
+
+        // Act
+        var result = sut.StandardDeviation(values);
+
+        // Assert
+        result.Should().BeApproximately(2.0, 0.001);
+    }
+
     // --- OverloadFraction ---
 
     [Fact]

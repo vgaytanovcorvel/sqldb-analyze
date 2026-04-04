@@ -7,8 +7,13 @@ public class PoolabilityService(IStatisticsService statisticsService) : IPoolabi
 {
     public virtual IReadOnlyList<DatabaseProfile> BuildProfiles(DtuTimeSeries timeSeries)
     {
+        return BuildProfiles(timeSeries, new PoolOptimizerOptions());
+    }
+
+    public virtual IReadOnlyList<DatabaseProfile> BuildProfiles(DtuTimeSeries timeSeries, PoolOptimizerOptions options)
+    {
         return timeSeries.DatabaseValues
-            .Select(kv => BuildSingleProfile(kv.Key, kv.Value))
+            .Select(kv => BuildSingleProfile(kv.Key, kv.Value, options))
             .OrderBy(p => p.DatabaseName)
             .ToList();
     }
@@ -27,15 +32,42 @@ public class PoolabilityService(IStatisticsService statisticsService) : IPoolabi
             fullCorr, peakCorr, peakOverlap, badScore);
     }
 
-    private DatabaseProfile BuildSingleProfile(string name, IReadOnlyList<double> values)
+    private DatabaseProfile BuildSingleProfile(string name, IReadOnlyList<double> values, PoolOptimizerOptions options)
     {
+        var p99 = statisticsService.Percentile(values, 0.99);
+        var stdDev = statisticsService.StandardDeviation(values);
+        var activeFraction = ComputeActiveFraction(values, options.LowSignalActiveValueThreshold);
+        var isLowSignal = ClassifyLowSignal(p99, stdDev, activeFraction, options);
+
         return new DatabaseProfile(
-            name,
-            values,
+            name, values,
             statisticsService.Mean(values),
             statisticsService.Percentile(values, 0.95),
-            statisticsService.Percentile(values, 0.99),
-            values.Count > 0 ? values.Max() : 0);
+            p99,
+            values.Count > 0 ? values.Max() : 0,
+            stdDev,
+            activeFraction,
+            isLowSignal);
+    }
+
+    private static double ComputeActiveFraction(IReadOnlyList<double> values, double activeThreshold)
+    {
+        if (values.Count == 0) return 0;
+
+        var activeCount = 0;
+        for (var i = 0; i < values.Count; i++)
+            if (values[i] > activeThreshold)
+                activeCount++;
+
+        return (double)activeCount / values.Count;
+    }
+
+    private static bool ClassifyLowSignal(
+        double p99, double stdDev, double activeFraction, PoolOptimizerOptions options)
+    {
+        return p99 < options.LowSignalP99Threshold
+               && stdDev < options.LowSignalStdDevThreshold
+               && activeFraction < options.LowSignalActiveFractionThreshold;
     }
 
     private (double PeakCorr, double PeakOverlap) ComputePeakMetrics(

@@ -13,4 +13,6 @@ public interface IStatisticsService
     IReadOnlyList<double> SumSeries(IReadOnlyList<IReadOnlyList<double>> series);
 
     double OverloadFraction(IReadOnlyList<double> values, double threshold);
+
+    double StandardDeviation(IReadOnlyList<double> values);
 }

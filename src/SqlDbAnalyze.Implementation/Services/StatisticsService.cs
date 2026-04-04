@@ -78,6 +78,21 @@ public class StatisticsService : IStatisticsService
         return (double)count / values.Count;
     }
 
+    public virtual double StandardDeviation(IReadOnlyList<double> values)
+    {
+        if (values.Count == 0) return 0;
+
+        var mean = Mean(values);
+        double sumSqDev = 0;
+        for (var i = 0; i < values.Count; i++)
+        {
+            var dev = values[i] - mean;
+            sumSqDev += dev * dev;
+        }
+
+        return Math.Sqrt(sumSqDev / values.Count);
+    }
+
     private static double ComputeCorrelation(
         IReadOnlyList<double> x,
         IReadOnlyList<double> y,

@@ -145,13 +145,19 @@ public class MetricsCacheService(
             registeredServerId, cancellationToken);
 
         var absoluteTimeSeries = ConvertToAbsoluteDtuTimeSeries(timeSeries, request.DatabaseNames, request.DtuLimits);
-        var profiles = poolabilityService.BuildProfiles(absoluteTimeSeries);
 
         var options = new PoolOptimizerOptions(
             TargetPercentile: request.TargetPercentile,
             SafetyFactor: request.SafetyFactor,
             MaxDatabasesPerPool: request.MaxDatabasesPerPool,
-            MinDiversificationRatio: request.MinDiversificationRatio);
+            MinDiversificationRatio: request.MinDiversificationRatio,
+            LowSignalP99Threshold: request.LowSignalP99Threshold,
+            LowSignalStdDevThreshold: request.LowSignalStdDevThreshold,
+            LowSignalActiveFractionThreshold: request.LowSignalActiveFractionThreshold,
+            FillerMaxDatabasesPerPool: request.FillerMaxDatabasesPerPool,
+            FillerSafetyFactor: request.FillerSafetyFactor);
+
+        var profiles = poolabilityService.BuildProfiles(absoluteTimeSeries, options);
 
         var initial = poolBuilder.BuildPools(profiles, options, cancellationToken);
         return localSearchOptimizer.Improve(initial, profiles, options, cancellationToken);

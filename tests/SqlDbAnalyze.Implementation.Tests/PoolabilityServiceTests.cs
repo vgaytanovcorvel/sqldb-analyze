@@ -49,6 +49,53 @@ public class PoolabilityServiceTests
         profile.P99.Should().BeGreaterThan(40.0);
     }
 
+    [Fact]
+    public void BuildProfiles_ShouldClassifyAsLowSignal_WhenFlatlinedSeries()
+    {
+        // Arrange -- near-zero series with tiny variance
+        var ts = CreateTimeSeries(("flat-db", [0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]));
+        var options = new PoolOptimizerOptions();
+
+        // Act
+        var result = sut.BuildProfiles(ts, options);
+
+        // Assert
+        var profile = result.Single();
+        profile.IsLowSignal.Should().BeTrue();
+        profile.StdDev.Should().BeLessThan(1.5);
+        profile.ActiveFraction.Should().BeLessThan(0.05);
+    }
+
+    [Fact]
+    public void BuildProfiles_ShouldNotClassifyAsLowSignal_WhenHighP99()
+    {
+        // Arrange -- series with meaningful load
+        var ts = CreateTimeSeries(("busy-db", [10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0]));
+        var options = new PoolOptimizerOptions();
+
+        // Act
+        var result = sut.BuildProfiles(ts, options);
+
+        // Assert
+        result.Single().IsLowSignal.Should().BeFalse();
+    }
+
+    [Fact]
+    public void BuildProfiles_ShouldComputeStdDevAndActiveFraction_WhenProfilesBuilt()
+    {
+        // Arrange
+        var ts = CreateTimeSeries(("db1", [0.0, 0.0, 5.0, 0.0, 0.0]));
+        var options = new PoolOptimizerOptions();
+
+        // Act
+        var result = sut.BuildProfiles(ts, options);
+
+        // Assert
+        var profile = result.Single();
+        profile.StdDev.Should().BeGreaterThan(0);
+        profile.ActiveFraction.Should().BeGreaterThan(0);
+    }
+
     // --- ComputePairwise ---
 
     [Fact]

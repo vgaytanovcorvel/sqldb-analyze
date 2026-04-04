@@ -8,4 +8,5 @@ public record PoolAssignment(
     double P99Load,
     double PeakLoad,
     double DiversificationRatio,
-    double OverloadFraction);
+    double OverloadFraction,
+    bool IsFillerPool = false);

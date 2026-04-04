@@ -106,7 +106,7 @@ public class MetricsCacheServiceAdditionalTests
             new("db1", [50.0], 50.0, 50.0, 50.0, 50.0),
             new("db2", [160.0], 160.0, 160.0, 160.0, 160.0)
         };
-        _poolabilityService.BuildProfiles(Arg.Any<DtuTimeSeries>()).Returns(profiles);
+        _poolabilityService.BuildProfiles(Arg.Any<DtuTimeSeries>(), Arg.Any<PoolOptimizerOptions>()).Returns(profiles);
 
         var initialResult = new PoolOptimizationResult(
             new List<PoolAssignment>
